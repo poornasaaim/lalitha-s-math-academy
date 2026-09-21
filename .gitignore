@@ -1,0 +1,35 @@
+# Environment & Secrets
+.env
+credentials.json
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Flask
+instance/
+flask_session/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

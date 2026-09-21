@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Lalitha's Math Academy — Expert Mathematics Tuition, Kolathur Chennai{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero Carousel ──────────────────────────────────────────── -->
+<section class="hero" id="hero-carousel" style="padding-top:68px">
+  <div class="carousel-track">
+    {% for img in carousel %}
+    <div class="carousel-slide">
+      <img src="{{ img.url }}" alt="{{ img.caption }}" loading="{% if loop.first %}eager{% else %}lazy{% endif %}">
+      <div class="carousel-overlay">
+        <div class="carousel-content">
+          <div class="carousel-badge">⭐ 20 Years of Excellence</div>
+          <h1 class="carousel-title">{{ img.caption }}</h1>
+          <p class="carousel-subtitle">
+            Expert Mathematics coaching for Class 9, 10 &amp; 12 students.<br>
+            Offline &amp; Online sessions available in Kolathur, Chennai.
+          </p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg" id="hero-login-btn">
+              🚀 Book a Session
+            </a>
+            <a href="#about" class="btn btn-ghost btn-lg" id="hero-about-btn">
+              👩‍🏫 Meet the Teacher
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Dots -->
+  <div class="carousel-dots">
+    {% for img in carousel %}
+    <div class="carousel-dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}"></div>
+    {% endfor %}
+  </div>
+
+  <!-- Prev/Next -->
+  <div class="carousel-controls">
+    <button class="carousel-btn" id="carousel-prev" aria-label="Previous slide">‹</button>
+    <button class="carousel-btn" id="carousel-next" aria-label="Next slide">›</button>
+  </div>
+</section>
+
+<!-- ── Stats Bar ──────────────────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-num" data-counter="20" data-suffix="+">0+</div>
+        <div class="stat-label">Years Experience</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-counter="100" data-suffix="%">0%</div>
+        <div class="stat-label">Board Exam Pass Rate</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-counter="500" data-suffix="+">0+</div>
+        <div class="stat-label">Students Taught</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-counter="7" data-suffix=" yrs">0 yrs</div>
+        <div class="stat-label">Consecutive 100% Result</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── About Section ──────────────────────────────────────────── -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <!-- Image Card -->
+      <div class="about-img-wrapper fade-up">
+        <div class="about-img-card">
+          <div class="about-avatar">👩‍🏫</div>
+          <div class="about-name">V. Lalitha</div>
+          <div class="about-title">M.Sc. (Mathematics) · B.Ed.</div>
+          <div class="about-exp-badge">🏆 20 Years of Teaching Excellence</div>
+          <div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center">
+            <span class="about-tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff">📐 CBSE Maths</span>
+            <span class="about-tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff">🎓 Class 9 – 12</span>
+            <span class="about-tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff">💻 Online & Offline</span>
+            <span class="about-tag" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff">📍 Kolathur, Chennai</span>
+          </div>
+        </div>
+        <div class="about-floating-card">
+          <div class="about-floating-icon">🏆</div>
+          <div>
+            <div class="about-floating-num">2 Centums</div>
+            <div class="about-floating-text">Produced in AISSE 2019–20</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="fade-up">
+        <div class="eyebrow"><div class="eyebrow-line"></div>About the Teacher</div>
+        <h2 class="section-title" style="text-align:left;margin-bottom:12px">
+          Passionate about making <span class="gradient-text">Maths Simple</span>
+        </h2>
+        <p style="color:var(--text-muted);margin-bottom:16px;line-height:1.8">
+          With a <strong>Master's degree in Mathematics</strong> from Madurai Kamaraj University and a B.Ed. from IGNOU, 
+          V. Lalitha brings 20 years of dedicated teaching experience. Currently serving at 
+          <strong>SKNS PMC Vivekananda Vidyalaya, Perambur</strong>, she has a proven track record of 
+          inspiring students and delivering <strong>100% board exam results for 7 consecutive years</strong>.
+        </p>
+        <p style="color:var(--text-muted);margin-bottom:24px;line-height:1.8">
+          Her teaching philosophy focuses on <em>kindling analytical and logical interest</em> — 
+          making complex concepts easy through innovative, student-centric methods.
+        </p>
+        <ul class="achievements-list">
+          <li>100% pass result in AISSE for 7 consecutive years</li>
+          <li>Produced 2 centum scores in AISSE (2019–2020)</li>
+          <li>Resource Person & AISSE Coordinator since 2010</li>
+          <li>AISSCE Board Evaluator and Observer</li>
+          <li>Conducts VISHESHA PRADEEPANA enrichment classes</li>
+        </ul>
+        <div style="margin-top:28px;display:flex;flex-wrap:wrap;gap:8px">
+          <span class="about-tag">Tamil · English · Telugu</span>
+          <span class="about-tag">CBSE Expert</span>
+          <span class="about-tag">Board Exam Specialist</span>
+          <span class="about-tag">Google Meet Classes</span>
+        </div>
+        <div style="margin-top:28px">
+          <a href="{{ url_for('register') }}" class="btn btn-primary" id="about-cta-btn">📝 Register Now — It's Free</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Advertising Banner ─────────────────────────────────────── -->
+<div style="background:var(--grad-primary);padding:48px 0;text-align:center;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\"50\" font-size=\"20\" opacity=\"0.05\">∑ ∫ π √ ∞ ∂ Δ</text></svg>') repeat;opacity:0.3"></div>
+  <div class="container" style="position:relative">
+    <div style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.7);margin-bottom:12px">🎉 Special Announcement</div>
+    <h2 style="font-family:var(--font-head);font-size:clamp(1.5rem,4vw,2.5rem);font-weight:900;color:#fff;margin-bottom:12px">
+      Try 1 Hour for FREE — No Commitment!
+    </h2>
+    <p style="color:rgba(255,255,255,0.85);font-size:1.05rem;margin-bottom:28px;max-width:500px;margin-left:auto;margin-right:auto">
+      Book your first trial session and experience the Lalitha's Math Academy difference. 
+      Seats are limited — don't miss out!
+    </p>
+    <a href="{{ url_for('register') }}" class="btn" style="background:white;color:var(--primary);font-weight:700;font-size:1rem;padding:16px 40px;border-radius:50px;box-shadow:0 8px 30px rgba(0,0,0,0.2)" id="trial-cta-btn">
+      ✨ Claim Free Trial Session
+    </a>
+  </div>
+</div>
+
+<!-- ── Pricing Plans ──────────────────────────────────────────── -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="text-center fade-up">
+      <div class="eyebrow" style="justify-content:center"><div class="eyebrow-line"></div>Flexible Plans<div class="eyebrow-line"></div></div>
+      <h2 class="section-title">Choose Your <span class="gradient-text">Learning Plan</span></h2>
+      <p class="section-subtitle">
+        Flexible booking options to fit every student's schedule and budget. 
+        Contact us via WhatsApp after booking to confirm the fee.
+      </p>
+    </div>
+
+    <div class="pricing-grid fade-up">
+
+      <!-- Hourly -->
+      <div class="pricing-card" id="plan-hourly">
+        <div class="pricing-icon">⏱️</div>
+        <div class="pricing-title">Hourly Session</div>
+        <p class="pricing-desc">
+          Maximum flexibility. Pay per session. Perfect for last-minute exam prep or topic-specific doubt clearing.
+        </p>
+        <div class="pricing-hint">📞 Ask for Pricing</div>
+        <ul style="list-style:none;margin-bottom:20px;text-align:left;font-size:0.85rem;color:var(--text-muted)">
+          <li style="padding:4px 0">✅ 1-hour focused session</li>
+          <li style="padding:4px 0">✅ Flexible scheduling</li>
+          <li style="padding:4px 0">✅ Offline & Online</li>
+          <li style="padding:4px 0">✅ Any chapter, any class</li>
+        </ul>
+        <a href="{{ url_for('login') }}" class="btn btn-outline" id="book-hourly-public">📅 Book Session</a>
+      </div>
+
+      <!-- Weekly -->
+      <div class="pricing-card" id="plan-weekly">
+        <div class="pricing-badge">Popular</div>
+        <div class="pricing-icon">📆</div>
+        <div class="pricing-title">Weekly Plan</div>
+        <p class="pricing-desc">
+          3 sessions per week on your chosen days. Build consistent study habits with structured learning.
+        </p>
+        <div class="pricing-hint">📞 Ask for Pricing</div>
+        <ul style="list-style:none;margin-bottom:20px;text-align:left;font-size:0.85rem;color:var(--text-muted)">
+          <li style="padding:4px 0">✅ 3 sessions/week (Mon, Wed, Fri)</li>
+          <li style="padding:4px 0">✅ Chapter-wise progress tracking</li>
+          <li style="padding:4px 0">✅ Weekly test included</li>
+          <li style="padding:4px 0">✅ Homework support</li>
+        </ul>
+        <a href="{{ url_for('login') }}" class="btn btn-primary" id="book-weekly-public">📆 Book Weekly</a>
+      </div>
+
+      <!-- Monthly -->
+      <div class="pricing-card featured" id="plan-monthly">
+        <div class="pricing-badge">Best Value</div>
+        <div class="pricing-icon">🗓️</div>
+        <div class="pricing-title">Monthly Package</div>
+        <p class="pricing-desc">
+          Full month of structured Mathematics coaching. Ideal for Class 10 & 12 board exam preparation.
+        </p>
+        <div class="pricing-hint">📞 Ask for Pricing</div>
+        <ul style="list-style:none;margin-bottom:20px;text-align:left;font-size:0.85rem;color:var(--text-muted)">
+          <li style="padding:4px 0">✅ 12 sessions/month</li>
+          <li style="padding:4px 0">✅ Monthly syllabus plan</li>
+          <li style="padding:4px 0">✅ Mock test + analysis</li>
+          <li style="padding:4px 0">✅ Parent progress update</li>
+        </ul>
+        <a href="{{ url_for('login') }}" class="btn btn-accent" id="book-monthly-public">🗓️ Book Monthly</a>
+      </div>
+
+      <!-- Yearly -->
+      <div class="pricing-card" id="plan-yearly">
+        <div class="pricing-badge">Max Savings</div>
+        <div class="pricing-icon">🎓</div>
+        <div class="pricing-title">Yearly Program</div>
+        <p class="pricing-desc">
+          Complete annual Mathematics program. Best for students targeting top scores in board exams.
+        </p>
+        <div class="pricing-hint">📞 Ask for Pricing</div>
+        <ul style="list-style:none;margin-bottom:20px;text-align:left;font-size:0.85rem;color:var(--text-muted)">
+          <li style="padding:4px 0">✅ Full year syllabus coverage</li>
+          <li style="padding:4px 0">✅ Previous year paper solving</li>
+          <li style="padding:4px 0">✅ Revision classes included</li>
+          <li style="padding:4px 0">✅ Best price guarantee</li>
+        </ul>
+        <a href="{{ url_for('login') }}" class="btn btn-outline" id="book-yearly-public">🎓 Book Yearly</a>
+      </div>
+
+    </div>
+
+    <div class="text-center" style="margin-top:40px">
+      <p style="color:var(--text-muted);font-size:0.9rem">
+        💬 Not sure which plan is right for you? 
+        <a href="https://wa.me/919841260450?text=Hi%20Lalitha%20Ma'am!%20I'd%20like%20to%20know%20more%20about%20your%20Math%20coaching%20plans." target="_blank" style="color:var(--primary-light);font-weight:600">Chat with us on WhatsApp →</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Why Choose Us ──────────────────────────────────────────── -->
+<section class="section" style="background:var(--bg-2);border-top:1px solid var(--border-light);border-bottom:1px solid var(--border-light)">
+  <div class="container">
+    <div class="text-center fade-up">
+      <div class="eyebrow" style="justify-content:center"><div class="eyebrow-line"></div>Why Choose Us<div class="eyebrow-line"></div></div>
+      <h2 class="section-title">Why Students Love <span class="gradient-text">Lalitha's Academy</span></h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-top:40px">
+      {% set features = [
+        ('🎯', 'Personalized Learning', 'Every student learns differently. Lalitha Ma\'am tailors teaching to each student\'s pace and understanding.'),
+        ('📊', 'Proven Track Record', '100% pass rate for 7 consecutive years in AISSE board exams with 2 centum scores.'),
+        ('💻', 'Online & Offline', 'Flexible modes — attend in person at Kolathur or join via Google Meet from anywhere.'),
+        ('⏰', 'Flexible Scheduling', 'Choose your time slots. Multiple batch timings available on weekdays and weekends.'),
+        ('📝', 'Regular Assessments', 'Weekly tests, mock exams, and chapter-wise assignments to ensure thorough preparation.'),
+        ('🤝', 'Personal Attention', 'Small batch sizes ensure every student gets individual attention and doubt-clearing time.'),
+      ] %}
+      {% for icon, title, desc in features %}
+      <div class="card fade-up" style="padding:28px">
+        <div style="font-size:2rem;margin-bottom:12px">{{ icon }}</div>
+        <h3 style="font-family:var(--font-head);font-weight:700;margin-bottom:8px;font-size:1rem">{{ title }}</h3>
+        <p style="font-size:0.87rem;color:var(--text-muted);line-height:1.6">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Section ────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container text-center fade-up">
+    <h2 class="section-title">Ready to Excel in <span class="gradient-text">Mathematics?</span></h2>
+    <p class="section-subtitle">
+      Join Lalitha's Math Academy today. Register for free, pick your plan, and start your journey to mathematical excellence.
+    </p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg" id="cta-register-btn">📝 Register Free Now</a>
+      <a href="https://wa.me/919841260450?text=Hi%20Lalitha%20Ma'am!%20I'm%20interested%20in%20joining%20your%20Math%20Academy." class="btn btn-wa btn-lg" id="cta-whatsapp-btn" target="_blank" rel="noopener">💬 WhatsApp Us</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

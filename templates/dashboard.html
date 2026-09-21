@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard — Lalitha's Math Academy{% endblock %}
+
+{% block content %}
+
+<!-- ── Dashboard Hero Carousel ─────────────────────────────────── -->
+<section style="padding-top:68px">
+  <div style="position:relative;height:40vh;min-height:280px;overflow:hidden" id="dash-carousel">
+    <div class="carousel-track">
+      {% for img in carousel %}
+      <div class="carousel-slide">
+        <img src="{{ img.url }}" alt="{{ img.caption }}" loading="lazy" style="filter:brightness(0.6)">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(124,58,237,0.5),rgba(15,14,23,0.7));display:flex;align-items:center">
+          <div class="container">
+            <div class="carousel-badge">👋 Welcome back, {{ user.full_name.split()[0] }}!</div>
+            <h2 style="font-family:var(--font-head);font-size:clamp(1.4rem,3vw,2.2rem);font-weight:900;color:#fff;margin-top:8px">{{ img.caption }}</h2>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="carousel-dots" style="bottom:16px">
+      {% for img in carousel %}
+      <div class="carousel-dot {% if loop.first %}active{% endif %}"></div>
+      {% endfor %}
+    </div>
+    <div class="carousel-controls" style="bottom:16px;right:16px">
+      <button class="carousel-btn" id="carousel-prev" style="width:36px;height:36px;font-size:0.9rem">‹</button>
+      <button class="carousel-btn" id="carousel-next" style="width:36px;height:36px;font-size:0.9rem">›</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Welcome + Motivational Text ───────────────────────────── -->
+<section style="padding:40px 0 20px">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        <h1 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800">
+          Hello, <span class="gradient-text">{{ user.full_name }}</span>! 📐
+        </h1>
+        <p style="color:var(--text-muted);font-size:0.95rem;margin-top:4px">
+          Class {{ user.class }} · {{ user.school }}
+        </p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <a href="{{ url_for('index') }}#contact" class="btn btn-ghost btn-sm">📞 Contact Us</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">🚪 Logout</a>
+      </div>
+    </div>
+
+    <!-- Motivational quote -->
+    <div class="glass" style="padding:20px 24px;margin-top:24px;display:flex;gap:16px;align-items:center">
+      <span style="font-size:2rem">💡</span>
+      <div>
+        <p style="font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--primary-light)">"Mathematics is not about numbers, equations, or algorithms — it's about understanding."</p>
+        <p style="font-size:0.8rem;color:var(--text-faint);margin-top:4px">— V. Lalitha Ma'am</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Booking Plans Grid ─────────────────────────────────────── -->
+<section class="section" style="padding-top:20px">
+  <div class="container">
+    <div class="text-center fade-up" style="margin-bottom:40px">
+      <div class="eyebrow" style="justify-content:center"><div class="eyebrow-line"></div>Book Your Session<div class="eyebrow-line"></div></div>
+      <h2 class="section-title">Choose Your <span class="gradient-text">Learning Plan</span></h2>
+      <p style="color:var(--text-muted);font-size:0.95rem">
+        Select a plan below, fill in your preferred schedule, and we'll confirm via WhatsApp!
+      </p>
+    </div>
+
+    <div class="pricing-grid fade-up">
+
+      <!-- Hourly -->
+      <div class="pricing-card" id="dashboard-plan-hourly">
+        <div class="pricing-icon">⏱️</div>
+        <div class="pricing-title">Hourly Session</div>
+        <p class="pricing-desc">
+          Flexible 1-hour sessions. Choose any available slot. Perfect for targeted doubt-clearing.
+        </p>
+        <div class="pricing-hint">📞 Fee on WhatsApp</div>
+        <ul style="list-style:none;margin-bottom:20px;text-align:left;font-size:0.85rem;color:var(--text-muted)">
+          <li style="padding:4px 0">✅ 1-hour sessions</li>
+          <li style="padding:4px 0">✅ Choose any available slot</li>
+          <li style="padding:4px 0">✅ Offline or Online</li>
+          <li style="padding:4px 0">✅ Doubt clearing focus</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%;justify-content:center" id="open-booking-hourly" onclick="openBookingModal('hourly')">
+          ⏱️ Book Hourly
+        </button>
+      </div>
+
+      <!-- Weekly -->
+      <div class="pricing-card" id="dashboard-plan-weekly">
+        <div class="pricing-badge">Popular</div>
+        <div class="pricing-icon">📆</div>
+        <div class="pricing-title">Weekly Plan</div>
+        <p class="pricing-desc">
+          3 sessions per week. Choose your 3 preferred days and a fixed time slot each week.
+        </p>
+        <div class="pricing-hint">📞 Fee on WhatsApp</div>
+        <ul style="list-style:none;margin-bottom:20px;text-align:left;font-size:0.85rem;color:var(--text-muted)">
+          <li style="padding:4px 0">✅ 3 days/week (your choice)</li>
+          <li style="padding:4px 0">✅ Fixed time slot</li>
+          <li style="padding:4px 0">✅ Weekly test included</li>
+          <li style="padding:4px 0">✅ Progress tracking</li>
+        </ul>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="open-booking-weekly" onclick="openBookingModal('weekly')">
+          📆 Book Weekly
+        </button>
+      </div>
+
+      <!-- Monthly -->
+      <div class="pricing-card featured" id="dashboard-plan-monthly">
+        <div class="pricing-badge">Best Value</div>
+        <div class="pricing-icon">🗓️</div>
+        <div class="pricing-title">Monthly Package</div>
+        <p class="pricing-desc">
+          Full month coaching. Ideal for board exam prep with structured syllabus coverage.
+        </p>
+        <div class="pricing-hint">📞 Fee on WhatsApp</div>
+        <ul style="list-style:none;margin-bottom:20px;text-align:left;font-size:0.85rem;color:var(--text-muted)">
+          <li style="padding:4px 0">✅ 12+ sessions/month</li>
+          <li style="padding:4px 0">✅ Monthly syllabus plan</li>
+          <li style="padding:4px 0">✅ Mock tests + analysis</li>
+          <li style="padding:4px 0">✅ Parent updates</li>
+        </ul>
+        <button class="btn btn-accent" style="width:100%;justify-content:center" id="open-booking-monthly" onclick="openBookingModal('monthly')">
+          🗓️ Book Monthly
+        </button>
+      </div>
+
+      <!-- Yearly -->
+      <div class="pricing-card" id="dashboard-plan-yearly">
+        <div class="pricing-badge">Max Savings</div>
+        <div class="pricing-icon">🎓</div>
+        <div class="pricing-title">Yearly Program</div>
+        <p class="pricing-desc">
+          Complete annual program for Class 10 & 12. Cover the full syllabus with regular revisions.
+        </p>
+        <div class="pricing-hint">📞 Fee on WhatsApp</div>
+        <ul style="list-style:none;margin-bottom:20px;text-align:left;font-size:0.85rem;color:var(--text-muted)">
+          <li style="padding:4px 0">✅ Full syllabus coverage</li>
+          <li style="padding:4px 0">✅ Previous year papers</li>
+          <li style="padding:4px 0">✅ Revision classes</li>
+          <li style="padding:4px 0">✅ Best price guaranteed</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%;justify-content:center" id="open-booking-yearly" onclick="openBookingModal('yearly')">
+          🎓 Book Yearly
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Booking Glass Modal ─────────────────────────────────────── -->
+<div class="booking-overlay" id="booking-overlay" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
+  <div class="booking-modal">
+    <button class="booking-close" onclick="closeBookingModal()" aria-label="Close">&times;</button>
+
+    <h2 class="booking-modal-title" id="booking-modal-title">📅 Book a Session</h2>
+    <p class="booking-modal-sub" id="booking-modal-sub">Fill in your preferred schedule below.</p>
+
+    <!-- Mode Selection -->
+    <div class="form-group">
+      <div class="form-label">🖥️ Mode</div>
+      <div class="mode-tabs">
+        <div class="mode-tab active" data-mode="offline">🏫 Offline (at center)</div>
+        <div class="mode-tab" data-mode="online">💻 Online (Google Meet)</div>
+      </div>
+      <div id="meet-note" class="hidden" style="margin-top:8px;padding:10px 14px;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);border-radius:var(--radius-sm);font-size:0.83rem;color:#22d3ee">
+        📹 You'll receive a Google Meet link via WhatsApp after your booking is confirmed by the teacher.
+      </div>
+    </div>
+
+    <!-- Day Picker -->
+    <div class="form-group">
+      <div class="form-label" id="day-picker-label">Choose Days</div>
+      <div class="day-picker" id="day-picker"></div>
+    </div>
+
+    <!-- Time Slots -->
+    <div class="form-group">
+      <div class="form-label">🕐 Available Time Slots <span style="color:var(--text-faint);font-weight:400">(Select a slot)</span></div>
+      <div class="slots-grid" id="slots-grid">
+        <p style="color:var(--text-faint);font-size:0.85rem;grid-column:1/-1">Loading slots...</p>
+      </div>
+    </div>
+
+    <!-- Quantity -->
+    <div class="form-group" id="qty-group">
+      <label class="form-label" id="qty-label" for="qty-input">Number of Sessions</label>
+      <input type="number" id="qty-input" min="1" max="52" placeholder="e.g. 4" style="width:100%">
+    </div>
+
+    <!-- Preferred Start Date -->
+    <div class="form-group">
+      <label class="form-label" for="preferred-date">📆 Preferred Start Date</label>
+      <input type="date" id="preferred-date"
+        min="{{ '' }}"
+        style="width:100%;color-scheme:dark">
+    </div>
+
+    <!-- Student Summary (read-only) -->
+    <div class="glass" style="padding:14px 18px;margin-bottom:20px;font-size:0.87rem;color:var(--text-muted)">
+      <strong style="color:var(--text)">Your Details:</strong><br>
+      👤 {{ user.full_name }} · Class {{ user.class }} · {{ user.school }}<br>
+      📱 {{ user.phone }} · 📚 Mathematics
+    </div>
+
+    <!-- Note about pricing -->
+    <div style="padding:12px 16px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:var(--radius-sm);font-size:0.83rem;color:#fbbf24;margin-bottom:20px">
+      💬 <strong>Note:</strong> The fee will be shared via WhatsApp after your booking is reviewed by Lalitha Ma'am. Click "Submit Booking" to send your request.
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px" id="booking-submit-btn">
+      📩 Submit Booking
+    </button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+<script>
+  // Set minimum date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('preferred-date').min = today;
+  document.getElementById('preferred-date').value = today;
+</script>
+{% endblock %}

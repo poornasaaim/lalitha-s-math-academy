@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed — Lalitha's Math Academy{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 20px 60px;background:var(--bg);position:relative;overflow:hidden">
+  <!-- Background orbs -->
+  <div style="position:absolute;width:400px;height:400px;background:var(--success);border-radius:50%;filter:blur(100px);opacity:0.15;top:-100px;right:-100px;pointer-events:none"></div>
+  <div style="position:absolute;width:300px;height:300px;background:var(--primary);border-radius:50%;filter:blur:100px;opacity:0.1;bottom:-80px;left:-80px;pointer-events:none"></div>
+
+  <div class="confirm-card fade-up" style="opacity:1;transform:none">
+    <!-- Success Icon -->
+    <div class="confirm-icon">🎉</div>
+    <h1 style="font-family:var(--font-head);font-size:1.8rem;font-weight:900;margin-bottom:8px">
+      Booking <span class="gradient-text">Submitted!</span>
+    </h1>
+    <p style="color:var(--text-muted);margin-bottom:32px;font-size:0.95rem">
+      Your session request has been received. Confirm it via WhatsApp to complete the booking.
+    </p>
+
+    <!-- Booking Details -->
+    <div style="text-align:left;margin-bottom:28px">
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">👤 Student</span>
+        <span class="confirm-detail-value">{{ booking.full_name }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">📱 Phone</span>
+        <span class="confirm-detail-value">{{ booking.phone }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">🏫 Class</span>
+        <span class="confirm-detail-value">Class {{ booking.get('class', 'N/A') }} · {{ booking.school }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">📚 Subject</span>
+        <span class="confirm-detail-value">Mathematics</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">📋 Plan</span>
+        <span class="confirm-detail-value" style="background:var(--bg-glass);padding:3px 12px;border-radius:50px;border:1px solid var(--border)">
+          {{ booking.basis | capitalize }}
+        </span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">⏱️ Duration</span>
+        <span class="confirm-detail-value">{{ booking.quantity or 'As selected' }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">📅 Days</span>
+        <span class="confirm-detail-value">{{ booking.days_of_week }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">🕐 Time Slot</span>
+        <span class="confirm-detail-value">{{ booking.time_slot }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">📆 Start Date</span>
+        <span class="confirm-detail-value">{{ booking.preferred_date or 'As discussed' }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">🖥️ Mode</span>
+        <span class="confirm-detail-value">{{ booking.mode | capitalize }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">🔖 Booking ID</span>
+        <span class="confirm-detail-value" style="font-family:monospace;color:var(--primary-light)">#{{ booking.id }}</span>
+      </div>
+    </div>
+
+    <!-- WhatsApp Confirmation Notice -->
+    <div style="background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3);border-radius:var(--radius);padding:16px;margin-bottom:24px;font-size:0.87rem;color:#4ade80;text-align:left">
+      <strong>📲 Next Step:</strong> Click the button below to open WhatsApp. The message with all your booking details will be pre-filled. Send it to Lalitha Ma'am to confirm your slot and get the fee details.
+    </div>
+
+    <!-- WhatsApp Button -->
+    <a href="{{ booking.wa_link }}" target="_blank" rel="noopener" class="btn btn-wa btn-lg" style="width:100%;justify-content:center;margin-bottom:12px" id="whatsapp-confirm-btn">
+      💬 Confirm Booking on WhatsApp
+    </a>
+
+    <!-- Back to Dashboard -->
+    <a href="{{ url_for('dashboard') }}" class="btn btn-ghost" style="width:100%;justify-content:center" id="back-dashboard-btn">
+      ← Back to Dashboard
+    </a>
+
+    <p style="font-size:0.78rem;color:var(--text-faint);margin-top:16px">
+      Booking ID: <strong style="color:var(--text-muted)">#{{ booking.id }}</strong> · Subject: Mathematics<br>
+      Lalitha's Math Academy · Kolathur, Chennai
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Register — Lalitha's Math Academy{% endblock %}
+{% block meta_desc %}Create your free student account at Lalitha's Math Academy to book Mathematics sessions online.{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="align-items:flex-start;padding-top:100px;padding-bottom:60px">
+  <div class="auth-bg-orb auth-bg-orb-1"></div>
+  <div class="auth-bg-orb auth-bg-orb-2"></div>
+
+  <div class="auth-card" style="max-width:560px">
+    <div class="auth-logo">
+      <a href="{{ url_for('index') }}" style="text-decoration:none">
+        <div class="auth-logo-icon">📐</div>
+      </a>
+      <h1 class="auth-title">Join the Academy!</h1>
+      <p class="auth-sub">Create your free student account</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('register') }}" id="register-form">
+
+      <!-- Full Name -->
+      <div class="form-group">
+        <label class="form-label" for="full_name">👤 Full Name</label>
+        <input type="text" id="full_name" name="full_name" placeholder="Enter your full name" required autocomplete="name">
+      </div>
+
+      <!-- Class & School -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="class_">🏫 Class / Grade</label>
+          <select id="class_" name="class_" required>
+            <option value="" disabled selected>Select class</option>
+            <option value="8">Class 8</option>
+            <option value="9">Class 9</option>
+            <option value="10">Class 10</option>
+            <option value="11">Class 11</option>
+            <option value="12">Class 12</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="school">🏛️ School Name</label>
+          <input type="text" id="school" name="school" placeholder="Your school name" required autocomplete="organization">
+        </div>
+      </div>
+
+      <!-- Address Line 1 -->
+      <div class="form-group">
+        <label class="form-label" for="address">📍 Address Line 1</label>
+        <input type="text" id="address" name="address" placeholder="Door no., Street, Area" required autocomplete="street-address">
+      </div>
+
+      <!-- Address Line 2 -->
+      <div class="form-group">
+        <label class="form-label" for="address2">📍 Address Line 2 <span style="color:var(--text-faint);font-weight:400">(optional)</span></label>
+        <input type="text" id="address2" name="address2" placeholder="Landmark, Locality" autocomplete="address-line2">
+      </div>
+
+      <!-- Address Line 3 & Pincode -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="city">🌆 City</label>
+          <input type="text" id="city" name="city" placeholder="City" autocomplete="address-level2">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pincode">📮 Pincode</label>
+          <input type="text" id="pincode" name="pincode" placeholder="6-digit pincode" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" required autocomplete="postal-code">
+        </div>
+      </div>
+
+      <!-- Phone & Password -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="phone">📱 Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]{10}" inputmode="numeric" required autocomplete="tel">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">🔒 Password</label>
+          <input type="password" id="password" name="password" placeholder="Create password" required autocomplete="new-password" minlength="6">
+        </div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group">
+        <label class="form-label" for="confirm_password">🔒 Confirm Password</label>
+        <div style="position:relative">
+          <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required autocomplete="new-password" style="padding-right:48px">
+          <button type="button" id="toggle-pwd" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-faint)" aria-label="Toggle">👁️</button>
+        </div>
+        <div id="pwd-match" style="font-size:0.8rem;margin-top:4px;color:var(--text-faint)"></div>
+      </div>
+
+      <!-- Terms -->
+      <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted)">
+        <input type="checkbox" id="terms" name="terms" required style="width:auto;margin-top:2px;flex-shrink:0">
+        <label for="terms">I agree to the tuition terms and confirm that the information provided is accurate. I understand that the fee will be discussed via WhatsApp after booking.</label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px" id="register-submit-btn">
+        ✅ Create My Account
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>Already a student?</span></div>
+
+    <a href="{{ url_for('login') }}" class="btn btn-outline" style="width:100%;justify-content:center" id="go-login-btn">
+      🔐 Login to Account
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Password visibility toggle
+  document.getElementById('toggle-pwd').addEventListener('click', function() {
+    const p1 = document.getElementById('password');
+    const p2 = document.getElementById('confirm_password');
+    const isHidden = p1.type === 'password';
+    p1.type = p2.type = isHidden ? 'text' : 'password';
+    this.textContent = isHidden ? '🙈' : '👁️';
+  });
+
+  // Password match indicator
+  document.getElementById('confirm_password').addEventListener('input', function() {
+    const msg = document.getElementById('pwd-match');
+    const match = this.value === document.getElementById('password').value;
+    msg.textContent = this.value ? (match ? '✅ Passwords match' : '❌ Passwords do not match') : '';
+    msg.style.color = match ? 'var(--success)' : 'var(--danger)';
+  });
+
+  // Combine address fields before submit
+  document.getElementById('register-form').addEventListener('submit', function(e) {
+    const a1 = document.getElementById('address').value.trim();
+    const a2 = document.getElementById('address2').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const fullAddr = [a1, a2, city].filter(Boolean).join(', ');
+    document.getElementById('address').value = fullAddr;
+  });
+</script>
+{% endblock %}

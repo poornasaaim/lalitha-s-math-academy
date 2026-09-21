@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Lalitha's Math Academy — Expert Mathematics Tuition, Chennai{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}Lalitha's Math Academy — Expert Mathematics tuition for Class 9, 10 & 12 students in Kolathur, Chennai. 20 years of experience, 100% board exam pass record. Book your session today!{% endblock %}">
+  <meta name="keywords" content="Mathematics tuition Chennai, Maths coaching Kolathur, Class 10 Maths tutor, Class 12 Maths coaching, CBSE Maths teacher Chennai, Lalitha Math Academy">
+  <meta name="author" content="V. Lalitha">
+  <meta property="og:title" content="Lalitha's Math Academy">
+  <meta property="og:description" content="Expert Mathematics Tuition in Chennai — 20 Years Experience">
+  <meta property="og:type" content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="page-enter">
+
+  <!-- Flash Messages -->
+  <div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash-msg flash-{{ category }}">
+          <span>{% if category == 'success' %}✅{% elif category == 'error' %}❌{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}</span>
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="main-navbar">
+    <div class="nav-inner">
+      <a href="{{ url_for('index') }}" class="nav-logo">
+        <div class="nav-logo-icon">📐</div>
+        <div class="nav-logo-text">
+          <span>Lalitha's Math Academy</span>
+          <span>EXCELLENCE IN MATHEMATICS</span>
+        </div>
+      </a>
+      <div class="nav-spacer"></div>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="{{ url_for('index') }}#about" class="{% if request.endpoint == 'index' %}active{% endif %}">About</a></li>
+        <li><a href="{{ url_for('index') }}#pricing">Plans</a></li>
+        <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+        {% if session.get('user') %}
+          <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+          <li>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">Logout</a>
+          </li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}" class="{% if request.endpoint == 'login' %}active{% endif %}">Login</a></li>
+          <li><a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Register Free</a></li>
+        {% endif %}
+      </ul>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle theme">☀️</button>
+      <button class="nav-mobile-btn" id="mobile-nav-btn" aria-label="Open menu">☰</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  {% block footer %}
+  <footer id="contact">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand -->
+        <div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div class="nav-logo-icon" style="width:44px;height:44px;font-size:1.4rem">📐</div>
+            <div>
+              <div class="footer-brand-name">Lalitha's Math Academy</div>
+              <div style="font-size:0.75rem;color:var(--text-faint)">Est. 2005 · Chennai</div>
+            </div>
+          </div>
+          <p class="footer-brand-desc">
+            Expert Mathematics tuition by <strong>V. Lalitha M.Sc., B.Ed.</strong> — 20 years of dedicated teaching. Transforming students' understanding of Mathematics through innovative and inspiring methods.
+          </p>
+          <div class="social-links">
+            <a href="{{ contact.get('whatsapp', '#') and 'https://wa.me/' + contact.get('whatsapp', '919841260450') }}" class="social-link" title="WhatsApp" target="_blank" rel="noopener">💬</a>
+            <a href="{{ contact.get('instagram', '#') }}" class="social-link" title="Instagram" target="_blank" rel="noopener">📸</a>
+            <a href="{{ contact.get('youtube', '#') }}" class="social-link" title="YouTube" target="_blank" rel="noopener">▶️</a>
+            <a href="mailto:{{ contact.get('email', 'lalithamurali1996@gmail.com') }}" class="social-link" title="Email">✉️</a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div>
+          <div class="footer-heading">Quick Links</div>
+          <ul class="footer-link-list">
+            <li><a href="{{ url_for('index') }}">🏠 Home</a></li>
+            <li><a href="{{ url_for('index') }}#about">👩‍🏫 About Lalitha Ma'am</a></li>
+            <li><a href="{{ url_for('index') }}#pricing">📋 Pricing Plans</a></li>
+            <li><a href="{{ url_for('login') }}">🔐 Student Login</a></li>
+            <li><a href="{{ url_for('register') }}">📝 Register</a></li>
+            <li><a href="{{ url_for('index') }}#contact">📍 Contact</a></li>
+          </ul>
+        </div>
+
+        <!-- Plans -->
+        <div>
+          <div class="footer-heading">Our Plans</div>
+          <ul class="footer-link-list">
+            <li><a href="{{ url_for('login') }}">⏱️ Hourly Sessions</a></li>
+            <li><a href="{{ url_for('login') }}">📆 Weekly Plans</a></li>
+            <li><a href="{{ url_for('login') }}">🗓️ Monthly Packages</a></li>
+            <li><a href="{{ url_for('login') }}">🎓 Yearly Programs</a></li>
+            <li><a href="{{ url_for('login') }}">💻 Online via Google Meet</a></li>
+            <li><a href="{{ url_for('login') }}">🏫 Offline @ Center</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact -->
+        <div>
+          <div class="footer-heading">Get in Touch</div>
+          <div class="footer-contact-item">
+            <span class="footer-contact-icon">📍</span>
+            <span>{{ contact.get('address', '89B, 15th Cross Street, Sivanandha Nagar (Senthil Nagar), Kolathur, Chennai - 600099') }}</span>
+          </div>
+          <div class="footer-contact-item">
+            <span class="footer-contact-icon">📞</span>
+            <a href="tel:{{ contact.get('phone', '+91 9841260450') }}">{{ contact.get('phone', '+91 9841260450') }}</a>
+          </div>
+          <div class="footer-contact-item">
+            <span class="footer-contact-icon">✉️</span>
+            <a href="mailto:{{ contact.get('email', 'lalithamurali1996@gmail.com') }}">{{ contact.get('email', 'lalithamurali1996@gmail.com') }}</a>
+          </div>
+          <!-- Google Map -->
+          <div class="map-embed">
+            <iframe
+              src="{{ contact.get('maps_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3885.723456789!2d80.2090123!3d13.1189456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5265ea0ed4a10b%3A0x5b3d6f17d9a9ef1f!2sKolathur%2C%20Chennai%2C%20Tamil%20Nadu%20600099!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin') }}"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Lalitha's Math Academy Location">
+            </iframe>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2024 Lalitha's Math Academy · Kolathur, Chennai</span>
+        <span>Made with ❤️ for Mathematics lovers</span>
+      </div>
+    </div>
+  </footer>
+  {% endblock %}
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
