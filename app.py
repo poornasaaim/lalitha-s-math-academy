@@ -131,14 +131,22 @@ def register():
         full_name = request.form.get("full_name", "").strip()
         cls       = request.form.get("class_", "").strip()
         school    = request.form.get("school", "").strip()
-        address   = request.form.get("address", "").strip()
+        # Combine address fields (server-side fallback if JS didn't run)
+        addr1   = request.form.get("address", "").strip()
+        addr2   = request.form.get("address2", "").strip()
+        city    = request.form.get("city", "").strip()
+        address = ", ".join(filter(None, [addr1, addr2, city]))
         pincode   = request.form.get("pincode", "").strip()
         phone     = request.form.get("phone", "").strip()
         password  = request.form.get("password", "").strip()
         confirm   = request.form.get("confirm_password", "").strip()
 
-        if not all([full_name, cls, school, address, pincode, phone, password]):
-            flash("All fields are required.", "error")
+        if not all([full_name, school, pincode, phone, password]):
+            flash("All fields are required (Name, School, Pincode, Phone, Password).", "error")
+        elif not cls:
+            flash("Please select your class / grade.", "error")
+        elif not address:
+            flash("Please enter your address.", "error")
         elif password != confirm:
             flash("Passwords do not match.", "error")
         elif len(phone) != 10 or not phone.isdigit():
@@ -397,4 +405,4 @@ def not_found(e):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5001)

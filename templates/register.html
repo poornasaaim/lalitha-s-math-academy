@@ -49,7 +49,7 @@
       <!-- Address Line 1 -->
       <div class="form-group">
         <label class="form-label" for="address">📍 Address Line 1</label>
-        <input type="text" id="address" name="address" placeholder="Door no., Street, Area" required autocomplete="street-address">
+        <input type="text" id="address" name="address" placeholder="Door no., Street, Area" autocomplete="street-address">
       </div>
 
       <!-- Address Line 2 -->
@@ -94,7 +94,7 @@
 
       <!-- Terms -->
       <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:20px;font-size:0.85rem;color:var(--text-muted)">
-        <input type="checkbox" id="terms" name="terms" required style="width:auto;margin-top:2px;flex-shrink:0">
+        <input type="checkbox" id="terms" name="terms" style="width:auto;margin-top:2px;flex-shrink:0">
         <label for="terms">I agree to the tuition terms and confirm that the information provided is accurate. I understand that the fee will be discussed via WhatsApp after booking.</label>
       </div>
 
@@ -134,9 +134,16 @@
   // Combine address fields before submit
   document.getElementById('register-form').addEventListener('submit', function(e) {
     const a1 = document.getElementById('address').value.trim();
-    const a2 = document.getElementById('address2').value.trim();
-    const city = document.getElementById('city').value.trim();
+    const a2 = (document.getElementById('address2') || {value:''}).value.trim();
+    const city = (document.getElementById('city') || {value:''}).value.trim();
     const fullAddr = [a1, a2, city].filter(Boolean).join(', ');
+
+    if (!fullAddr) {
+      e.preventDefault();
+      alert('Please enter your address.');
+      document.getElementById('address').focus();
+      return;
+    }
     document.getElementById('address').value = fullAddr;
   });
 </script>
