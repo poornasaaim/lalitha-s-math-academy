@@ -262,10 +262,12 @@
                 <th>Student</th>
                 <th>Phone</th>
                 <th>Plan</th>
+                <th>Hours / Qty</th>
                 <th>Days</th>
                 <th>Time Slot</th>
                 <th>Mode</th>
-                <th>Meet Link</th>
+                <th>Start Date</th>
+                <th>Meet Link / Address</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -273,15 +275,23 @@
               {% for b in confirmed %}
               <tr>
                 <td style="color:var(--text-faint);font-size:0.8rem">#{{ b.id }}</td>
-                <td><strong>{{ b.full_name }}</strong><br><span style="font-size:0.78rem;color:var(--text-muted)">Class {{ b.class }}</span></td>
+                <td><strong>{{ b.full_name }}</strong><br><span style="font-size:0.78rem;color:var(--text-muted)">Class {{ b.class or '—' }}</span></td>
                 <td><a href="tel:{{ b.phone }}" style="color:var(--primary-light)">{{ b.phone }}</a></td>
                 <td><span class="status-badge status-confirmed">{{ b.basis | capitalize }}</span></td>
-                <td style="font-size:0.82rem">{{ b.days_of_week }}</td>
-                <td style="font-size:0.82rem">{{ b.time_slot }}</td>
-                <td>{{ b.mode | capitalize }}</td>
+                <td><strong>{{ b.quantity or '1' }}</strong> {{ 'hrs' if b.basis == 'hourly' else 'session(s)' }}</td>
+                <td style="font-size:0.82rem;white-space:nowrap">{{ b.days_of_week }}</td>
+                <td style="font-size:0.82rem;white-space:nowrap">{{ b.time_slot }}</td>
+                <td>
+                  {% if b.mode == 'online' %}
+                  <span style="color:var(--info)">💻 Online</span>
+                  {% else %}
+                  <span style="color:var(--success)">🏫 Offline</span>
+                  {% endif %}
+                </td>
+                <td style="font-size:0.82rem">{{ b.preferred_date or '—' }}</td>
                 <td>
                   {% if b.meet_link %}
-                  <a href="{{ b.meet_link }}" target="_blank" style="color:var(--info);font-size:0.8rem">🔗 Open Meet</a>
+                  <a href="{{ b.meet_link }}" target="_blank" style="color:var(--info);font-size:0.8rem;display:block;margin-bottom:4px">🔗 Open Meet</a>
                   {% else %}
                   <span style="color:var(--text-faint);font-size:0.8rem">—</span>
                   {% endif %}

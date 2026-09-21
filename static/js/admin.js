@@ -24,11 +24,11 @@ function initNavTabs() {
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       navItems.forEach(n => n.classList.remove('active'));
-      sections.forEach(s => s.classList.add('hidden'));
+      sections.forEach(s => s.classList.remove('active'));
 
       item.classList.add('active');
       const target = document.getElementById(`section-${item.dataset.section}`);
-      if (target) target.classList.remove('hidden');
+      if (target) target.classList.add('active');
     });
   });
 }

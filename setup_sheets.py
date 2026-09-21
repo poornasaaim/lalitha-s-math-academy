@@ -3,7 +3,7 @@ setup_sheets.py — One-time initializer for Google Sheets
 Run this once to create all required worksheets with sample data.
 
 Usage:
-    python setup_sheets.py
+    python3 setup_sheets.py
 """
 
 import os
@@ -20,7 +20,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-SHEET_ID   = os.getenv("GOOGLE_SHEET_ID", "")
+SHEET_ID   = os.getenv("GOOGLE_SHEET_ID", "").strip()
 CREDS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
 
 
@@ -41,15 +41,32 @@ def get_or_create_worksheet(spreadsheet, title: str, rows=100, cols=20):
 
 def setup():
     if not SHEET_ID:
-        print("ERROR: GOOGLE_SHEET_ID not set in .env file.")
-        sys.exit(1)
-    if not os.path.exists(CREDS_FILE):
-        print(f"ERROR: credentials file '{CREDS_FILE}' not found.")
+        print("❌ ERROR: GOOGLE_SHEET_ID is not set in your .env file.")
+        print("   Please edit .env and set: GOOGLE_SHEET_ID=your_spreadsheet_id_here\n")
         sys.exit(1)
 
-    creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
-    client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key(SHEET_ID)
+    if not os.path.exists(CREDS_FILE):
+        print(f"❌ ERROR: Credentials file '{CREDS_FILE}' not found.")
+        print("   Please place your Google Service Account key file named 'credentials.json' in the project root directory.\n")
+        sys.exit(1)
+
+    if os.path.getsize(CREDS_FILE) == 0:
+        print(f"⚠️ ERROR: '{CREDS_FILE}' is empty (0 bytes).")
+        print("   To use real Google Sheets:")
+        print("   1. Go to Google Cloud Console → IAM & Admin → Service Accounts")
+        print("   2. Download your Service Account JSON Key")
+        print("   3. Save the JSON contents into 'credentials.json'\n")
+        print("💡 NOTE: The web app already works in DEMO MODE without credentials!")
+        sys.exit(1)
+
+    try:
+        creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
+        client = gspread.authorize(creds)
+        spreadsheet = client.open_by_key(SHEET_ID)
+    except Exception as e:
+        print(f"❌ ERROR reading '{CREDS_FILE}': {e}")
+        print("   Ensure 'credentials.json' contains valid JSON from your Google Cloud Console Service Account key.\n")
+        sys.exit(1)
 
     print("\n=== Lalitha's Math Academy — Sheet Setup ===\n")
 

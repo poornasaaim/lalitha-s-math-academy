@@ -1,96 +1,137 @@
 """
-sheets.py — Google Sheets helper for Lalitha's Math Academy
+sheets.py — Google Sheets integration for Lalitha's Math Academy
 
-DEMO MODE: When credentials.json is missing or empty, the app automatically
-runs in demo mode with in-memory data. All features work for testing.
-When you set up real Google Sheets credentials, it switches seamlessly.
+AUTO-DETECTION:
+  • If credentials.json has a valid service account key AND GOOGLE_SHEET_ID is set
+    → writes/reads from real Google Sheets
+  • Otherwise → demo mode (in-memory data, identical API surface)
+
+After saving credentials via the admin panel, the next API call automatically
+switches to live mode (no restart required).
 """
 
-import os
-import json
-import hashlib
-import datetime
-import gspread
-from google.oauth2.service_account import Credentials
+import os, json, hashlib, datetime
 from dotenv import load_dotenv
 
 load_dotenv()
 
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
-]
-
-SHEET_ID   = os.getenv("GOOGLE_SHEET_ID", "")
+SCOPES     = ["https://www.googleapis.com/auth/spreadsheets",
+               "https://www.googleapis.com/auth/drive"]
+SHEET_ID   = os.getenv("GOOGLE_SHEET_ID", "").strip()
 CREDS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
 
-# ─── Demo Mode Detection ─────────────────────────────────────────────────────
-def _is_demo_mode() -> bool:
-    """Returns True if credentials.json is missing or empty."""
+# ── Lazy GSheets client (recreated after credentials change) ──────────────────
+_gc   = None
+_spr  = None
+
+def _sheets_ok() -> bool:
+    """Dynamically check if real GSheets is usable (called per request)."""
+    if not SHEET_ID:
+        return False
     if not os.path.exists(CREDS_FILE):
-        return True
+        return False
     try:
         with open(CREDS_FILE) as f:
-            data = json.load(f)
-        return not data.get("type")           # real creds always have "type"
+            d = json.load(f)
+        return bool(d.get("private_key") and d.get("type") == "service_account")
     except Exception:
-        return True
+        return False
 
-DEMO_MODE = _is_demo_mode()
-if DEMO_MODE:
-    print("[INFO] sheets.py running in DEMO MODE — using in-memory sample data.")
-    print("[INFO] To use real Google Sheets, add valid credentials.json and set GOOGLE_SHEET_ID in .env")
+def reset_client():
+    """Call after saving new credentials to force reconnection."""
+    global _gc, _spr
+    _gc = None
+    _spr = None
 
-# ─── In-Memory Sample Data (Demo Mode) ───────────────────────────────────────
-import hashlib as _hs
-def _h(p): return _hs.sha256(p.encode()).hexdigest()
+def _ws(name: str):
+    """Get a worksheet, (re)connecting if needed."""
+    global _gc, _spr
+    import gspread
+    from google.oauth2.service_account import Credentials
+    try:
+        if _gc is None:
+            creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
+            _gc   = gspread.authorize(creds)
+        if _spr is None:
+            _spr = _gc.open_by_key(SHEET_ID)
+        return _spr.worksheet(name)
+    except Exception as e:
+        reset_client()
+        raise e
+
+def hash_password(p: str) -> str:
+    return hashlib.sha256(p.encode()).hexdigest()
+
+def get_connection_status() -> dict:
+    """Returns connection status info for admin panel."""
+    if _sheets_ok():
+        try:
+            _ws("users")
+            return {"mode": "live", "sheet_id": SHEET_ID,
+                    "message": "✅ Connected to Google Sheets"}
+        except Exception as e:
+            return {"mode": "error", "sheet_id": SHEET_ID,
+                    "message": f"❌ Credentials valid but connection failed: {e}"}
+    else:
+        reasons = []
+        if not SHEET_ID:
+            reasons.append("GOOGLE_SHEET_ID not set in .env")
+        if not os.path.exists(CREDS_FILE):
+            reasons.append("credentials.json not found")
+        else:
+            try:
+                with open(CREDS_FILE) as f:
+                    d = json.load(f)
+                if not d.get("private_key"):
+                    reasons.append("credentials.json is empty or invalid")
+            except Exception:
+                reasons.append("credentials.json cannot be parsed")
+        return {"mode": "demo", "sheet_id": SHEET_ID,
+                "message": "⚠️ Demo Mode — " + "; ".join(reasons)}
+
+# ── In-memory Demo Data ───────────────────────────────────────────────────────
+_h = hash_password
 
 _DEMO_USERS = [
-    {"id": 1, "full_name": "Arjun Kumar",  "class": "10", "school": "Govt Higher Secondary School",
-     "address": "12, Anna Nagar, Chennai, 600040", "pincode": "600040",
-     "phone": "9876543210", "password_hash": _h("student123"), "created_at": "2024-01-15 10:00:00"},
-    {"id": 2, "full_name": "Priya Sharma", "class": "12", "school": "DAV Matriculation School",
-     "address": "45, T.Nagar, Chennai, 600017",    "pincode": "600017",
-     "phone": "9876543211", "password_hash": _h("student456"), "created_at": "2024-01-16 11:30:00"},
+    {"id":1,"full_name":"Arjun Kumar","class":"10","school":"Govt Higher Secondary School",
+     "address":"12, Anna Nagar, Chennai","pincode":"600040","phone":"9876543210",
+     "password_hash":_h("student123"),"created_at":"2024-01-15 10:00:00"},
+    {"id":2,"full_name":"Priya Sharma","class":"12","school":"DAV Matriculation School",
+     "address":"45, T.Nagar, Chennai","pincode":"600017","phone":"9876543211",
+     "password_hash":_h("student456"),"created_at":"2024-01-16 11:30:00"},
 ]
-
-_DEMO_BOOKINGS = [
-    {"id": 1, "user_id": 1, "full_name": "Arjun Kumar", "phone": "9876543210",
-     "class": "10", "school": "Govt HSS", "mode": "offline", "basis": "weekly",
-     "quantity": "3 days/week", "days_of_week": "Monday, Wednesday, Friday",
-     "time_slot": "4:00 PM - 5:00 PM", "preferred_date": "2024-02-01",
-     "subject": "Mathematics", "status": "pending", "meet_link": "", "created_at": "2024-01-20 14:00:00"},
+_DEMO_BOOKINGS  = [
+    {"id":1,"user_id":1,"full_name":"Arjun Kumar","phone":"9876543210","class":"10",
+     "school":"Govt HSS","mode":"offline","basis":"weekly","quantity":"3 weeks",
+     "days_of_week":"Monday, Wednesday, Friday","time_slot":"4:00 PM - 5:00 PM",
+     "preferred_date":"2024-02-01","subject":"Mathematics","status":"pending",
+     "meet_link":"","notes":"","created_at":"2024-01-20 14:00:00"},
 ]
-
 _DEMO_CONFIRMED = []
+_DEMO_NEXT      = {"user": 3, "booking": 2}
 
-_DEMO_NEXT_USER_ID    = [3]
-_DEMO_NEXT_BOOKING_ID = [2]
-
-_DEMO_SLOTS = [
-    {"day": d, "time_slot": t, "is_available": "TRUE"}
-    for d in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
-    for t in ["4:00 PM - 5:00 PM","5:00 PM - 6:00 PM","6:00 PM - 7:00 PM","7:00 PM - 8:00 PM"]
-] + [
-    {"day": "Sunday", "time_slot": t, "is_available": "TRUE"}
-    for t in ["9:00 AM - 10:00 AM","10:00 AM - 11:00 AM","11:00 AM - 12:00 PM"]
-]
+_DEMO_SETTINGS = {
+    "max_days_per_week":  "3",
+    "available_days":     "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday",
+    "min_hours":          "1",
+    "max_hours":          "4",
+    "time_slots":         "4:00 PM,5:00 PM,6:00 PM,7:00 PM",
+    "pricing_hourly":     "Contact for pricing",
+    "pricing_weekly":     "Contact for pricing",
+    "pricing_monthly":    "Contact for pricing",
+    "pricing_yearly":     "Contact for pricing",
+    "online_available":   "TRUE",
+    "offline_available":  "TRUE",
+}
 
 _DEMO_CAROUSEL = [
-    {"url": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1200&q=80",
-     "caption": "Excellence in Mathematics Education", "order": 1},
-    {"url": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&q=80",
-     "caption": "20 Years of Teaching Experience", "order": 2},
-    {"url": "https://images.unsplash.com/photo-1596496050827-8299e0220de1?w=1200&q=80",
-     "caption": "100% Board Exam Pass Record", "order": 3},
+    {"url":"https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1200&q=80",
+     "caption":"Excellence in Mathematics Education","order":1},
+    {"url":"https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&q=80",
+     "caption":"20 Years of Teaching Experience","order":2},
+    {"url":"https://images.unsplash.com/photo-1596496050827-8299e0220de1?w=1200&q=80",
+     "caption":"100% Board Exam Pass Record","order":3},
 ]
-
-_DEMO_PRICING = {
-    "hourly":  {"basis":"hourly",   "description":"Pay per session. Maximum flexibility. 1-hour sessions tailored to your pace.",         "price_hint":"Contact for pricing","highlight":"Flexible"},
-    "weekly":  {"basis":"weekly",   "description":"3 sessions per week (Mon/Wed/Fri or Tue/Thu/Sat). Build consistent study habits.",      "price_hint":"Contact for pricing","highlight":"Popular"},
-    "monthly": {"basis":"monthly",  "description":"Full month package with 3 sessions/week. Best for board exam preparation.",             "price_hint":"Contact for pricing","highlight":"Best Value"},
-    "yearly":  {"basis":"yearly",   "description":"Annual commitment with maximum savings. Ideal for Class 10 & 12 students.",             "price_hint":"Contact for pricing","highlight":"Max Savings"},
-}
 
 _DEMO_CONTACT = {
     "phone":        "+91 8122231658",
@@ -106,27 +147,43 @@ _DEMO_CONTACT = {
     "school_name":  "Lalitha's Math Academy",
 }
 
-# ─── GSheets Client ──────────────────────────────────────────────────────────
-_client      = None
-_spreadsheet = None
 
-def _get_client():
-    global _client
-    if _client is None:
-        creds   = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
-        _client = gspread.authorize(creds)
-    return _client
+# ════════════════════════════════════════════════════════════════════════════
+# SETTINGS (admin preferences — max days, slots, pricing, etc.)
+# ════════════════════════════════════════════════════════════════════════════
 
-def _get_sheet(sheet_name: str):
-    global _spreadsheet
-    client = _get_client()
-    if _spreadsheet is None:
-        _spreadsheet = client.open_by_key(SHEET_ID)
-    return _spreadsheet.worksheet(sheet_name)
+def get_settings() -> dict:
+    if _sheets_ok():
+        try:
+            ws = _ws("settings")
+            return {r["key"]: r["value"] for r in ws.get_all_records()}
+        except Exception as e:
+            print(f"[GSheets] get_settings fallback: {e}")
+    return dict(_DEMO_SETTINGS)
 
-# ─── Password Hashing ─────────────────────────────────────────────────────────
-def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
+
+def save_settings(settings: dict) -> bool:
+    """Save/update admin settings. Merges with existing."""
+    if _sheets_ok():
+        try:
+            ws      = _ws("settings")
+            records = ws.get_all_records()
+            headers = ws.row_values(1)
+            k_col   = headers.index("key")   + 1
+            v_col   = headers.index("value") + 1
+            existing = {r["key"]: i + 2 for i, r in enumerate(records)}
+            for k, v in settings.items():
+                if k in existing:
+                    ws.update_cell(existing[k], v_col, str(v))
+                else:
+                    ws.append_row([k, str(v), ""])
+            return True
+        except Exception as e:
+            print(f"[GSheets] save_settings error: {e}")
+            return False
+    # Demo mode
+    _DEMO_SETTINGS.update(settings)
+    return True
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -134,46 +191,45 @@ def hash_password(password: str) -> str:
 # ════════════════════════════════════════════════════════════════════════════
 
 def get_user_by_phone(phone: str):
-    if DEMO_MODE:
-        return next((u for u in _DEMO_USERS if str(u["phone"]) == str(phone).strip()), None)
-    try:
-        ws = _get_sheet("users")
-        for r in ws.get_all_records():
-            if str(r.get("phone","")).strip() == str(phone).strip():
-                return r
-    except Exception as e:
-        print(f"[GSheets Error] get_user_by_phone: {e}")
-    return None
+    phone = str(phone).strip()
+    if _sheets_ok():
+        try:
+            ws = _ws("users")
+            for r in ws.get_all_records():
+                if str(r.get("phone","")).strip() == phone:
+                    return r
+            return None
+        except Exception as e:
+            print(f"[GSheets] get_user_by_phone fallback: {e}")
+    return next((u for u in _DEMO_USERS if str(u["phone"]) == phone), None)
 
 
-def register_user(full_name, cls, school, address, pincode, phone, password):
-    """Add new user. Returns (True, msg) or (False, error)."""
+def register_user(full_name, cls, school, address, pincode, phone, password) -> tuple:
     phone = str(phone).strip()
     if get_user_by_phone(phone):
         return False, "Phone number already registered."
-
-    if DEMO_MODE:
-        uid = _DEMO_NEXT_USER_ID[0]
-        _DEMO_NEXT_USER_ID[0] += 1
-        _DEMO_USERS.append({
-            "id": uid, "full_name": full_name, "class": cls, "school": school,
-            "address": address, "pincode": pincode, "phone": phone,
-            "password_hash": hash_password(password),
-            "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        })
-        return True, "Registration successful."
-
-    try:
-        ws  = _get_sheet("users")
-        uid = len(ws.get_all_records()) + 1
-        ws.append_row([
-            uid, full_name, cls, school, address, pincode, phone,
-            hash_password(password),
-            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        ])
-        return True, "Registration successful."
-    except Exception as e:
-        return False, str(e)
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    row = [None, full_name, cls, school, address, pincode, phone,
+           hash_password(password), now]
+    if _sheets_ok():
+        try:
+            ws  = _ws("users")
+            uid = len(ws.get_all_records()) + 1
+            row[0] = uid
+            ws.append_row(row)
+            return True, "Registration successful."
+        except Exception as e:
+            print(f"[GSheets] register_user error: {e}")
+            return False, f"Registration failed: {e}"
+    uid     = _DEMO_NEXT["user"]
+    _DEMO_NEXT["user"] += 1
+    row[0]  = uid
+    _DEMO_USERS.append({
+        "id": uid, "full_name": full_name, "class": cls, "school": school,
+        "address": address, "pincode": pincode, "phone": phone,
+        "password_hash": hash_password(password), "created_at": now,
+    })
+    return True, "Registration successful."
 
 
 def authenticate_user(phone, password):
@@ -183,246 +239,212 @@ def authenticate_user(phone, password):
     return None
 
 
+def get_all_users() -> list:
+    if _sheets_ok():
+        try:
+            return _ws("users").get_all_records()
+        except Exception:
+            pass
+    return list(_DEMO_USERS)
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # BOOKINGS
 # ════════════════════════════════════════════════════════════════════════════
 
+_BOOKING_HEADERS = [
+    "id","user_id","full_name","phone","class","school",
+    "mode","basis","quantity","days_of_week","time_slot",
+    "preferred_date","subject","status","meet_link","notes","created_at"
+]
+
 def create_booking(data: dict):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    if DEMO_MODE:
-        bid = _DEMO_NEXT_BOOKING_ID[0]
-        _DEMO_NEXT_BOOKING_ID[0] += 1
-        _DEMO_BOOKINGS.append({
-            "id": bid,
-            "user_id":        data.get("user_id",""),
-            "full_name":      data.get("full_name",""),
-            "phone":          data.get("phone",""),
-            "class":          data.get("class",""),
-            "school":         data.get("school",""),
-            "mode":           data.get("mode","offline"),
-            "basis":          data.get("basis","hourly"),
-            "quantity":       data.get("quantity",""),
-            "days_of_week":   data.get("days_of_week",""),
-            "time_slot":      data.get("time_slot",""),
-            "preferred_date": data.get("preferred_date",""),
-            "subject":        "Mathematics",
-            "status":         "pending",
-            "meet_link":      "",
-            "created_at":     now,
-        })
-        return bid
-
-    try:
-        ws  = _get_sheet("bookings")
-        bid = len(ws.get_all_records()) + 1
-        ws.append_row([
-            bid,
-            data.get("user_id",""),   data.get("full_name",""),
-            data.get("phone",""),     data.get("class",""),
-            data.get("school",""),    data.get("mode","offline"),
-            data.get("basis","hourly"), data.get("quantity",""),
-            data.get("days_of_week",""), data.get("time_slot",""),
-            data.get("preferred_date",""), "Mathematics",
-            "pending", "", now,
-        ])
-        return bid
-    except Exception as e:
-        print(f"[Booking Error] {e}")
-        return None
+    if _sheets_ok():
+        try:
+            ws  = _ws("bookings")
+            bid = len(ws.get_all_records()) + 1
+            ws.append_row([
+                bid,
+                data.get("user_id",""),   data.get("full_name",""),
+                data.get("phone",""),     data.get("class",""),
+                data.get("school",""),    data.get("mode","offline"),
+                data.get("basis","hourly"), data.get("quantity",""),
+                data.get("days_of_week",""), data.get("time_slot",""),
+                data.get("preferred_date",""), "Mathematics",
+                "pending", "", data.get("notes",""), now,
+            ])
+            return bid
+        except Exception as e:
+            print(f"[GSheets] create_booking error: {e}")
+            return None
+    bid = _DEMO_NEXT["booking"]
+    _DEMO_NEXT["booking"] += 1
+    _DEMO_BOOKINGS.append({
+        "id": bid, "user_id": data.get("user_id",""),
+        "full_name": data.get("full_name",""), "phone": data.get("phone",""),
+        "class": data.get("class",""),         "school": data.get("school",""),
+        "mode": data.get("mode","offline"),    "basis": data.get("basis","hourly"),
+        "quantity": data.get("quantity",""),   "days_of_week": data.get("days_of_week",""),
+        "time_slot": data.get("time_slot",""), "preferred_date": data.get("preferred_date",""),
+        "subject": "Mathematics", "status": "pending",
+        "meet_link": "", "notes": data.get("notes",""), "created_at": now,
+    })
+    return bid
 
 
-def get_all_bookings():
-    if DEMO_MODE:
-        return list(_DEMO_BOOKINGS)
-    try:
-        return _get_sheet("bookings").get_all_records()
-    except Exception:
-        return []
+def get_all_bookings() -> list:
+    if _sheets_ok():
+        try:
+            return _ws("bookings").get_all_records()
+        except Exception:
+            pass
+    return list(_DEMO_BOOKINGS)
 
 
-def get_pending_bookings():
+def get_pending_bookings() -> list:
     return [b for b in get_all_bookings() if b.get("status","") == "pending"]
 
 
-def get_confirmed_bookings():
-    if DEMO_MODE:
-        return list(_DEMO_CONFIRMED)
-    try:
-        return [b for b in _get_sheet("bookings").get_all_records() if b.get("status") == "confirmed"]
-    except Exception:
-        return []
+def get_confirmed_bookings() -> list:
+    if _sheets_ok():
+        try:
+            return [b for b in _ws("bookings").get_all_records()
+                    if b.get("status") == "confirmed"]
+        except Exception:
+            pass
+    return list(_DEMO_CONFIRMED)
 
 
-def confirm_booking(booking_id, meet_link=""):
-    booking_id = str(booking_id)
-
-    if DEMO_MODE:
-        for b in _DEMO_BOOKINGS:
-            if str(b["id"]) == booking_id:
-                b["status"]    = "confirmed"
-                b["meet_link"] = meet_link
-                _DEMO_CONFIRMED.append(dict(b))
-                _DEMO_BOOKINGS.remove(b)
-                return True
-        return False
-
-    try:
-        ws      = _get_sheet("bookings")
-        records = ws.get_all_records()
-        headers = ws.row_values(1)
-        s_col   = headers.index("status")    + 1
-        m_col   = headers.index("meet_link") + 1
-        for i, r in enumerate(records, start=2):
-            if str(r.get("id","")) == booking_id:
-                ws.update_cell(i, s_col, "confirmed")
-                if meet_link:
+def confirm_booking(booking_id, meet_link="") -> bool:
+    bid = str(booking_id)
+    if _sheets_ok():
+        try:
+            ws      = _ws("bookings")
+            records = ws.get_all_records()
+            headers = ws.row_values(1)
+            s_col   = headers.index("status")    + 1
+            m_col   = headers.index("meet_link") + 1
+            for i, r in enumerate(records, start=2):
+                if str(r.get("id","")) == bid:
+                    ws.update_cell(i, s_col, "confirmed")
                     ws.update_cell(i, m_col, meet_link)
-                # copy to confirmed_bookings
-                try:
-                    cws = _get_sheet("confirmed_bookings")
-                    row = list(r.values())
-                    row[headers.index("status")]    = "confirmed"
-                    row[headers.index("meet_link")] = meet_link
-                    cws.append_row(row)
-                except Exception:
-                    pass
-                return True
-    except Exception as e:
-        print(f"[Confirm Error] {e}")
+                    # copy to confirmed_bookings
+                    try:
+                        cws = _ws("confirmed_bookings")
+                        row = list(r.values())
+                        row[headers.index("status")]    = "confirmed"
+                        row[headers.index("meet_link")] = meet_link
+                        cws.append_row(row)
+                    except Exception:
+                        pass
+                    return True
+            return False
+        except Exception as e:
+            print(f"[GSheets] confirm_booking error: {e}")
+            return False
+    for b in _DEMO_BOOKINGS:
+        if str(b["id"]) == bid:
+            b["status"]    = "confirmed"
+            b["meet_link"] = meet_link
+            _DEMO_CONFIRMED.append(dict(b))
+            _DEMO_BOOKINGS.remove(b)
+            return True
     return False
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# ADMIN
+# ADMIN AUTH
 # ════════════════════════════════════════════════════════════════════════════
 
 def authenticate_admin(password: str) -> bool:
-    # Always try env fallback first for reliability
-    fallback = os.getenv("ADMIN_PASSWORD", "admin@lalitha2024")
-    if password == fallback:
+    # Always allow env fallback
+    if password == os.getenv("ADMIN_PASSWORD", "admin@lalitha2024"):
         return True
-
-    if DEMO_MODE:
-        return password in ("admin@lalitha2024", "admin123")
-
-    try:
-        ws      = _get_sheet("admin")
-        records = ws.get_all_records()
-        if records:
-            stored = records[0].get("password_hash","")
-            return stored == hash_password(password)
-    except Exception:
-        pass
-    return False
+    if _sheets_ok():
+        try:
+            ws = _ws("admin")
+            for r in ws.get_all_records():
+                if r.get("password_hash") == hash_password(password):
+                    return True
+        except Exception:
+            pass
+    return password in ("admin@lalitha2024", "admin123")
 
 
 # ════════════════════════════════════════════════════════════════════════════
 # CAROUSEL
 # ════════════════════════════════════════════════════════════════════════════
 
-def get_carousel_images():
-    if DEMO_MODE:
-        return sorted(_DEMO_CAROUSEL, key=lambda x: int(x.get("order",99)))
-    try:
-        ws = _get_sheet("carousel_images")
-        return sorted(ws.get_all_records(), key=lambda x: int(x.get("order",99)))
-    except Exception:
-        return _DEMO_CAROUSEL
+def get_carousel_images() -> list:
+    if _sheets_ok():
+        try:
+            ws = _ws("carousel_images")
+            return sorted(ws.get_all_records(), key=lambda x: int(x.get("order",99)))
+        except Exception:
+            pass
+    return list(_DEMO_CAROUSEL)
 
 
-def update_carousel_images(images: list):
-    if DEMO_MODE:
-        _DEMO_CAROUSEL.clear()
-        _DEMO_CAROUSEL.extend(images)
-        return True
-    try:
-        ws = _get_sheet("carousel_images")
-        ws.clear()
-        ws.append_row(["url","caption","order"])
-        for i, img in enumerate(images, 1):
-            ws.append_row([img.get("url",""), img.get("caption",""), i])
-        return True
-    except Exception:
-        return False
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# AVAILABLE SLOTS
-# ════════════════════════════════════════════════════════════════════════════
-
-def get_available_slots():
-    if DEMO_MODE:
-        return list(_DEMO_SLOTS)
-    try:
-        return _get_sheet("available_slots").get_all_records()
-    except Exception:
-        return list(_DEMO_SLOTS)
-
-
-def set_all_slots(slots: list):
-    if DEMO_MODE:
-        _DEMO_SLOTS.clear()
-        _DEMO_SLOTS.extend(slots)
-        return True
-    try:
-        ws = _get_sheet("available_slots")
-        ws.clear()
-        ws.append_row(["day","time_slot","is_available"])
-        for s in slots:
-            ws.append_row([s["day"], s["time_slot"], s["is_available"]])
-        return True
-    except Exception:
-        return False
-
-
-def update_slot_availability(day: str, time_slot: str, is_available: bool):
-    val = "TRUE" if is_available else "FALSE"
-    if DEMO_MODE:
-        for s in _DEMO_SLOTS:
-            if s["day"] == day and s["time_slot"] == time_slot:
-                s["is_available"] = val
-                return True
-        _DEMO_SLOTS.append({"day": day, "time_slot": time_slot, "is_available": val})
-        return True
-    try:
-        ws      = _get_sheet("available_slots")
-        records = ws.get_all_records()
-        headers = ws.row_values(1)
-        a_col   = headers.index("is_available") + 1
-        for i, r in enumerate(records, start=2):
-            if r.get("day") == day and r.get("time_slot") == time_slot:
-                ws.update_cell(i, a_col, val)
-                return True
-        ws.append_row([day, time_slot, val])
-        return True
-    except Exception as e:
-        print(f"[Slot Error] {e}")
-        return False
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# PRICING
-# ════════════════════════════════════════════════════════════════════════════
-
-def get_pricing():
-    if DEMO_MODE:
-        return _DEMO_PRICING
-    try:
-        ws = _get_sheet("pricing")
-        return {r["basis"]: r for r in ws.get_all_records()}
-    except Exception:
-        return _DEMO_PRICING
+def update_carousel_images(images: list) -> bool:
+    if _sheets_ok():
+        try:
+            ws = _ws("carousel_images")
+            ws.clear()
+            ws.append_row(["url","caption","order"])
+            for i, img in enumerate(images, 1):
+                ws.append_row([img.get("url",""), img.get("caption",""), i])
+            return True
+        except Exception:
+            return False
+    _DEMO_CAROUSEL.clear()
+    _DEMO_CAROUSEL.extend(images)
+    return True
 
 
 # ════════════════════════════════════════════════════════════════════════════
 # CONTACT INFO
 # ════════════════════════════════════════════════════════════════════════════
 
-def get_contact_info():
-    if DEMO_MODE:
-        return _DEMO_CONTACT
-    try:
-        ws = _get_sheet("contact_info")
-        return {r["key"]: r["value"] for r in ws.get_all_records()}
-    except Exception:
-        return _DEMO_CONTACT
+def get_contact_info() -> dict:
+    if _sheets_ok():
+        try:
+            ws = _ws("contact_info")
+            return {r["key"]: r["value"] for r in ws.get_all_records()}
+        except Exception:
+            pass
+    return dict(_DEMO_CONTACT)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# PRICING (kept for backward compat)
+# ════════════════════════════════════════════════════════════════════════════
+
+def get_pricing() -> dict:
+    s = get_settings()
+    return {
+        "hourly":  {"basis":"hourly",  "description":"Pay per session. Flexible scheduling for 1–4 hours.",
+                    "price_hint": s.get("pricing_hourly","Contact for pricing"), "highlight":"Flexible"},
+        "weekly":  {"basis":"weekly",  "description":f"3 sessions/week. Consistent structured learning.",
+                    "price_hint": s.get("pricing_weekly","Contact for pricing"), "highlight":"Popular"},
+        "monthly": {"basis":"monthly", "description":"Full month coaching. Board exam preparation.",
+                    "price_hint": s.get("pricing_monthly","Contact for pricing"), "highlight":"Best Value"},
+        "yearly":  {"basis":"yearly",  "description":"Annual program. Maximum savings.",
+                    "price_hint": s.get("pricing_yearly","Contact for pricing"), "highlight":"Max Savings"},
+    }
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# LEGACY: available_slots (kept for backward compat; settings.time_slots is primary)
+# ════════════════════════════════════════════════════════════════════════════
+
+def get_available_slots() -> list:
+    """Returns flat list of {day, time_slot, is_available} from settings."""
+    s          = get_settings()
+    days       = [d.strip() for d in s.get("available_days","").split(",") if d.strip()]
+    time_slots = [t.strip() for t in s.get("time_slots","").split(",") if t.strip()]
+    result     = []
+    for day in days:
+        for ts in time_slots:
+            result.append({"day": day, "time_slot": ts, "is_available": "TRUE"})
+    return result
