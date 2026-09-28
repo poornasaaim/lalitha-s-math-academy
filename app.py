@@ -270,19 +270,25 @@ def admin_logout():
 @app.route("/admin-dashboard")
 @admin_required
 def admin_dashboard():
-    pending   = sheets.get_pending_bookings()
-    confirmed = sheets.get_confirmed_bookings()
-    slots     = sheets.get_available_slots()
-    pricing   = sheets.get_pricing()
-    contact   = sheets.get_contact_info()
-    carousel  = sheets.get_carousel_images()
+    pending    = sheets.get_pending_bookings()
+    confirmed  = sheets.get_confirmed_bookings()
+    slots      = sheets.get_available_slots()
+    pricing    = sheets.get_pricing()
+    contact    = sheets.get_contact_info()
+    carousel   = sheets.get_carousel_images()
+    settings   = sheets.get_settings()
+    users      = sheets.get_all_users()
+    connection = sheets.get_connection_status()
     return render_template("admin_dashboard.html",
                            pending=pending,
                            confirmed=confirmed,
                            slots=slots,
                            pricing=pricing,
                            contact=contact,
-                           carousel=carousel)
+                           carousel=carousel,
+                           settings=settings,
+                           users=users,
+                           connection=connection)
 
 
 @app.route("/api/admin/confirm", methods=["POST"])
@@ -338,6 +344,15 @@ def admin_update_slots():
     data = request.get_json() or {}
     slots = data.get("slots", [])
     ok = sheets.set_all_slots(slots)
+    return jsonify({"success": ok})
+
+
+@app.route("/api/admin/settings", methods=["POST"])
+@admin_required
+def admin_update_settings():
+    data = request.get_json() or {}
+    settings = data.get("settings", {})
+    ok = sheets.save_settings(settings)
     return jsonify({"success": ok})
 
 

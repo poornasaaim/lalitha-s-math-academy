@@ -218,12 +218,53 @@ function showAdminFlash(message, type = 'info') {
   setTimeout(() => div.remove(), 5000);
 }
 
+// ── Settings Manager ───────────────────────────────────────────
+function initSettingsManager() {
+  const saveBtn = document.getElementById('save-settings-btn');
+  if (!saveBtn) return;
+
+  saveBtn.addEventListener('click', async () => {
+    const settings = {
+      available_days:     document.getElementById('setting-available-days')?.value.trim() || '',
+      max_days_per_week:  document.getElementById('setting-max-days')?.value.trim() || '3',
+      time_slots:         document.getElementById('setting-time-slots')?.value.trim() || '',
+      min_hours:          document.getElementById('setting-min-hours')?.value.trim() || '1',
+      max_hours:          document.getElementById('setting-max-hours')?.value.trim() || '4',
+      online_available:   document.getElementById('setting-online')?.checked ? 'TRUE' : 'FALSE',
+      offline_available:  document.getElementById('setting-offline')?.checked ? 'TRUE' : 'FALSE',
+      pricing_hourly:     document.getElementById('setting-price-hourly')?.value.trim() || '',
+      pricing_weekly:     document.getElementById('setting-price-weekly')?.value.trim() || '',
+      pricing_monthly:    document.getElementById('setting-price-monthly')?.value.trim() || '',
+      pricing_yearly:     document.getElementById('setting-price-yearly')?.value.trim() || '',
+    };
+
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings }),
+      });
+      const data = await res.json();
+      showAdminFlash(data.success ? 'Settings saved! ✅' : 'Error saving settings.', data.success ? 'success' : 'error');
+    } catch {
+      showAdminFlash('Network error.', 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 Save Settings';
+    }
+  });
+}
+
 // ── Init ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
   initNavTabs();
   initSlotsManager();
   initCarouselManager();
+  initSettingsManager();
 });
 
 // Expose functions

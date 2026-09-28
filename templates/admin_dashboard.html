@@ -47,8 +47,17 @@
       <button class="sidebar-nav-item" data-section="slots">
         <span class="icon">🕐</span> Manage Slots
       </button>
+      <button class="sidebar-nav-item" data-section="settings">
+        <span class="icon">⚙️</span> Settings
+      </button>
+      <button class="sidebar-nav-item" data-section="students">
+        <span class="icon">👥</span> Registered Students
+      </button>
       <button class="sidebar-nav-item" data-section="carousel">
         <span class="icon">🖼️</span> Carousel Images
+      </button>
+      <button class="sidebar-nav-item" data-section="connection">
+        <span class="icon">🔗</span> GSheets Status
       </button>
 
       <div class="sidebar-section-label">Account</div>
@@ -390,6 +399,175 @@
           {% endif %}
         </div>
         {% endfor %}
+      </div>
+    </section>
+
+    <!-- ══ Section: Settings ══ -->
+    <section class="admin-section" id="section-settings">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <h2 style="font-family:var(--font-head);font-size:1.2rem;font-weight:800">⚙️ Academy Settings</h2>
+        <button class="btn btn-primary btn-sm" id="save-settings-btn">💾 Save Settings</button>
+      </div>
+
+      <p style="color:var(--text-muted);font-size:0.87rem;margin-bottom:24px">
+        Configure your academy preferences. These settings control what students see when booking sessions.
+      </p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+        <!-- Scheduling -->
+        <div class="card" style="padding:24px">
+          <h3 style="font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:16px">📅 Scheduling</h3>
+          <div class="form-group">
+            <label class="form-label">Available Days</label>
+            <input type="text" id="setting-available-days" value="{{ settings.get('available_days', 'Monday,Tuesday,Wednesday,Thursday,Friday,Saturday') }}" placeholder="Monday,Tuesday,...">
+            <small style="color:var(--text-faint);font-size:0.75rem">Comma-separated day names</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Days per Week</label>
+            <input type="number" id="setting-max-days" value="{{ settings.get('max_days_per_week', '3') }}" min="1" max="7">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time Slots</label>
+            <input type="text" id="setting-time-slots" value="{{ settings.get('time_slots', '4:00 PM - 5:00 PM,5:00 PM - 6:00 PM,6:00 PM - 7:00 PM,7:00 PM - 8:00 PM') }}" placeholder="4:00 PM - 5:00 PM,...">
+            <small style="color:var(--text-faint);font-size:0.75rem">Comma-separated time slots</small>
+          </div>
+        </div>
+
+        <!-- Hours -->
+        <div class="card" style="padding:24px">
+          <h3 style="font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:16px">⏱️ Hours Configuration</h3>
+          <div class="form-group">
+            <label class="form-label">Minimum Hours per Session</label>
+            <input type="number" id="setting-min-hours" value="{{ settings.get('min_hours', '1') }}" min="1" max="8">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maximum Hours per Session</label>
+            <input type="number" id="setting-max-hours" value="{{ settings.get('max_hours', '4') }}" min="1" max="8">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Modes Available</label>
+            <div style="display:flex;gap:16px;margin-top:6px">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9rem">
+                <input type="checkbox" id="setting-online" {% if settings.get('online_available','TRUE') == 'TRUE' %}checked{% endif %} style="width:auto"> 💻 Online
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9rem">
+                <input type="checkbox" id="setting-offline" {% if settings.get('offline_available','TRUE') == 'TRUE' %}checked{% endif %} style="width:auto"> 🏫 Offline
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="card" style="padding:24px">
+          <h3 style="font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:16px">💰 Pricing Hints</h3>
+          <div class="form-group">
+            <label class="form-label">Hourly Price</label>
+            <input type="text" id="setting-price-hourly" value="{{ settings.get('pricing_hourly', 'Contact for pricing') }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Weekly Price</label>
+            <input type="text" id="setting-price-weekly" value="{{ settings.get('pricing_weekly', 'Contact for pricing') }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monthly Price</label>
+            <input type="text" id="setting-price-monthly" value="{{ settings.get('pricing_monthly', 'Contact for pricing') }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Yearly Price</label>
+            <input type="text" id="setting-price-yearly" value="{{ settings.get('pricing_yearly', 'Contact for pricing') }}">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Section: Students ══ -->
+    <section class="admin-section" id="section-students">
+      <h2 style="font-family:var(--font-head);font-size:1.2rem;font-weight:800;margin-bottom:20px">👥 Registered Students</h2>
+
+      {% if not users %}
+      <div class="booking-table-card" style="padding:48px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:12px">👥</div>
+        <p style="color:var(--text-muted)">No registered students yet.</p>
+      </div>
+      {% else %}
+      <div class="booking-table-card">
+        <div class="table-header">
+          <div class="table-title">All Students ({{ users|length }})</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="booking-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Class</th>
+                <th>School</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Pincode</th>
+                <th>Registered</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td style="color:var(--text-faint);font-size:0.8rem">#{{ u.id }}</td>
+                <td><strong>{{ u.full_name }}</strong></td>
+                <td>Class {{ u.class or '—' }}</td>
+                <td style="font-size:0.85rem">{{ u.school or '—' }}</td>
+                <td><a href="tel:{{ u.phone }}" style="color:var(--primary-light)">{{ u.phone }}</a></td>
+                <td style="font-size:0.82rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ u.address or '' }}">{{ u.address or '—' }}</td>
+                <td>{{ u.pincode or '—' }}</td>
+                <td style="font-size:0.8rem;color:var(--text-muted)">{{ u.created_at or '—' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- ══ Section: Connection Status ══ -->
+    <section class="admin-section" id="section-connection">
+      <h2 style="font-family:var(--font-head);font-size:1.2rem;font-weight:800;margin-bottom:20px">🔗 Google Sheets Connection</h2>
+
+      <div class="card" style="padding:28px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+            {% if connection.mode == 'live' %}background:rgba(16,185,129,0.15){% elif connection.mode == 'demo' %}background:rgba(245,158,11,0.15){% else %}background:rgba(239,68,68,0.15){% endif %}">
+            {% if connection.mode == 'live' %}✅{% elif connection.mode == 'demo' %}⚠️{% else %}❌{% endif %}
+          </div>
+          <div>
+            <div style="font-family:var(--font-head);font-weight:700;font-size:1.05rem">
+              {% if connection.mode == 'live' %}Live Mode — Connected to Google Sheets
+              {% elif connection.mode == 'demo' %}Demo Mode — Using In-Memory Data
+              {% else %}Error — Connection Failed{% endif %}
+            </div>
+            <div style="color:var(--text-muted);font-size:0.85rem">{{ connection.message }}</div>
+          </div>
+        </div>
+
+        {% if connection.sheet_id %}
+        <div style="margin-top:16px;padding:12px;background:var(--bg-glass);border-radius:8px">
+          <div style="font-size:0.8rem;color:var(--text-faint);margin-bottom:4px">Sheet ID</div>
+          <code style="font-size:0.85rem;word-break:break-all">{{ connection.sheet_id }}</code>
+        </div>
+        <a href="https://docs.google.com/spreadsheets/d/{{ connection.sheet_id }}" target="_blank" class="btn btn-outline btn-sm" style="margin-top:12px">📊 Open in Google Sheets</a>
+        {% endif %}
+
+        {% if connection.mode == 'demo' %}
+        <div style="margin-top:20px;padding:16px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px">
+          <div style="font-weight:600;margin-bottom:8px">💡 To enable Google Sheets:</div>
+          <ol style="color:var(--text-muted);font-size:0.87rem;padding-left:20px;line-height:2">
+            <li>Create a Service Account in Google Cloud Console</li>
+            <li>Download the JSON key → save as <code>credentials.json</code></li>
+            <li>Share your Google Sheet with the service account email</li>
+            <li>Run: <code>python3 setup_sheets.py</code></li>
+            <li>Restart: <code>python3 app.py</code></li>
+          </ol>
+        </div>
+        {% endif %}
       </div>
     </section>
 

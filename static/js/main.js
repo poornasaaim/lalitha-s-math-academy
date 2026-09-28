@@ -6,8 +6,15 @@
 const THEME_KEY = 'lalitha-theme';
 
 function getTheme() {
+  // Default to dark theme — user can switch to light via toggle
   return localStorage.getItem(THEME_KEY) || 'dark';
 }
+
+// Apply theme IMMEDIATELY to prevent flash of wrong theme
+(function() {
+  const saved = localStorage.getItem(THEME_KEY) || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+})();
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
