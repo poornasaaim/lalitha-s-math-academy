@@ -164,9 +164,68 @@
     <h2 class="booking-modal-title" id="booking-modal-title">📅 Book a Session</h2>
     <p class="booking-modal-sub" id="booking-modal-sub">Fill in your preferred schedule below.</p>
 
-    <!-- Mode Selection -->
-    <div class="form-group">
-      <div class="form-label">🖥️ Mode</div>
+    <!-- 1. Schedule Type (Daily vs Specific Days - for Monthly/Yearly) -->
+    <div class="form-group hidden" id="schedule-type-group">
+      <div class="form-label">🗓️ Schedule Preference</div>
+      <div class="mode-tabs" id="schedule-type-tabs">
+        <div class="mode-tab active" data-schedule="days" id="tab-schedule-days">📅 Specific Days/Week</div>
+        <div class="mode-tab" data-schedule="daily" id="tab-schedule-daily">⚡ Daily (Mon – Sun)</div>
+      </div>
+    </div>
+
+    <!-- 2. Months Input (for Monthly / Yearly) -->
+    <div class="form-group hidden" id="months-group">
+      <label class="form-label" id="months-label" for="months-input">🗓️ Number of Months</label>
+      <input type="number" id="months-input" min="1" max="12" value="1" placeholder="e.g. 1" style="width:100%">
+    </div>
+
+    <!-- 3. Weeks Input (for Weekly) -->
+    <div class="form-group hidden" id="weeks-group">
+      <label class="form-label" for="weeks-input">📆 Duration (Number of Weeks)</label>
+      <input type="number" id="weeks-input" min="1" max="52" value="4" placeholder="e.g. 4" style="width:100%">
+    </div>
+
+    <!-- 4. Hours Needed Input (for Hourly, Weekly, Monthly, Yearly) -->
+    <div class="form-group" id="hours-group">
+      <label class="form-label" id="hours-label" for="hours-input">⏱️ Hours Needed per Session</label>
+      <select id="hours-input" style="width:100%">
+        <option value="1">1 Hour</option>
+        <option value="2">2 Hours</option>
+        <option value="3">3 Hours</option>
+        <option value="4">4 Hours</option>
+      </select>
+    </div>
+
+    <!-- 5. Number of Days per Week Input -->
+    <div class="form-group hidden" id="num-days-group">
+      <label class="form-label" for="num-days-input">📅 Number of Days per Week</label>
+      <input type="number" id="num-days-input" min="1" max="7" value="3" style="width:100%">
+    </div>
+
+    <!-- 6. Available Time Slots (from GSheets) -->
+    <div class="form-group" id="slots-group">
+      <div class="form-label">🕐 Available Time Slots <span style="color:var(--text-faint);font-weight:400"></span></div>
+      <div class="slots-grid" id="slots-grid">
+        <p style="color:var(--text-faint);font-size:0.85rem;grid-column:1/-1">Loading slots...</p>
+      </div>
+    </div>
+
+    <!-- 7. Day Picker (Includes Sunday!) -->
+    <div class="form-group" id="day-picker-group">
+      <div class="form-label" id="day-picker-label">📅 Select Preferred Day(s)</div>
+      <div class="day-picker" id="day-picker"></div>
+    </div>
+
+    <!-- 8. Preferred Start Date -->
+    <div class="form-group" id="date-group">
+      <label class="form-label" for="preferred-date">📆 Preferred Start Date</label>
+      <input type="date" id="preferred-date"
+        style="width:100%;color-scheme:dark">
+    </div>
+
+    <!-- 9. Mode Selection -->
+    <div class="form-group" id="mode-group">
+      <div class="form-label">🖥️ Class Mode</div>
       <div class="mode-tabs">
         <div class="mode-tab active" data-mode="offline">🏫 Offline (at center)</div>
         <div class="mode-tab" data-mode="online">💻 Online (Google Meet)</div>
@@ -174,34 +233,6 @@
       <div id="meet-note" class="hidden" style="margin-top:8px;padding:10px 14px;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);border-radius:var(--radius-sm);font-size:0.83rem;color:#22d3ee">
         📹 You'll receive a Google Meet link via WhatsApp after your booking is confirmed by the teacher.
       </div>
-    </div>
-
-    <!-- Day Picker -->
-    <div class="form-group">
-      <div class="form-label" id="day-picker-label">Choose Days</div>
-      <div class="day-picker" id="day-picker"></div>
-    </div>
-
-    <!-- Time Slots -->
-    <div class="form-group">
-      <div class="form-label">🕐 Available Time Slots <span style="color:var(--text-faint);font-weight:400">(Select a slot)</span></div>
-      <div class="slots-grid" id="slots-grid">
-        <p style="color:var(--text-faint);font-size:0.85rem;grid-column:1/-1">Loading slots...</p>
-      </div>
-    </div>
-
-    <!-- Quantity -->
-    <div class="form-group" id="qty-group">
-      <label class="form-label" id="qty-label" for="qty-input">Number of Sessions</label>
-      <input type="number" id="qty-input" min="1" max="52" placeholder="e.g. 4" style="width:100%">
-    </div>
-
-    <!-- Preferred Start Date -->
-    <div class="form-group">
-      <label class="form-label" for="preferred-date">📆 Preferred Start Date</label>
-      <input type="date" id="preferred-date"
-        min="{{ '' }}"
-        style="width:100%;color-scheme:dark">
     </div>
 
     <!-- Student Summary (read-only) -->

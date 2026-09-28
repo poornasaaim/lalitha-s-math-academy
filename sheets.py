@@ -28,6 +28,13 @@ def _sheets_ok() -> bool:
     """Dynamically check if real GSheets is usable (called per request)."""
     if not SHEET_ID:
         return False
+    creds_env = os.getenv("GOOGLE_CREDENTIALS_JSON", "").strip()
+    if creds_env:
+        try:
+            d = json.loads(creds_env)
+            return bool(d.get("private_key") and d.get("type") == "service_account")
+        except Exception:
+            pass
     if not os.path.exists(CREDS_FILE):
         return False
     try:
@@ -50,7 +57,12 @@ def _ws(name: str):
     from google.oauth2.service_account import Credentials
     try:
         if _gc is None:
-            creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
+            creds_env = os.getenv("GOOGLE_CREDENTIALS_JSON", "").strip()
+            if creds_env:
+                info = json.loads(creds_env)
+                creds = Credentials.from_service_account_info(info, scopes=SCOPES)
+            else:
+                creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
             _gc   = gspread.authorize(creds)
         if _spr is None:
             _spr = _gc.open_by_key(SHEET_ID)
@@ -112,7 +124,7 @@ _DEMO_NEXT      = {"user": 3, "booking": 2}
 
 _DEMO_SETTINGS = {
     "max_days_per_week":  "3",
-    "available_days":     "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday",
+    "available_days":     "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday",
     "min_hours":          "1",
     "max_hours":          "4",
     "time_slots":         "4:00 PM - 5:00 PM,5:00 PM - 6:00 PM,6:00 PM - 7:00 PM,7:00 PM - 8:00 PM",
@@ -303,15 +315,31 @@ def get_all_bookings() -> list:
 
 
 def get_pending_bookings() -> list:
-    return [b for b in get_all_bookings() if str(b.get("status","")) == "pending"]
+    return [b for b in get_all_bookings() if str(b.get("status","")).strip().lower() == "pending"]
 
 
 def get_confirmed_bookings() -> list:
     if _sheets_ok():
         try:
-            return [b for b in _ws("bookings").get_all_records()
-                    if str(b.get("status","")) == "confirmed"]
-        except Exception:
+            b1 = [b for b in _ws("bookings").get_all_records()
+                    if str(b.get("status","")).strip().lower() == "confirmed"]
+            try:
+                b2 = _ws("confirmed_bookings").get_all_records()
+            except Exception:
+                b2 = []
+
+            seen = set()
+            combined = []
+            for b in b1 + b2:
+                bid = str(b.get("id","")).strip()
+                if bid and bid not in seen:
+                    seen.add(bid)
+                    combined.append(b)
+                elif not bid and b not in combined:
+                    combined.append(b)
+            return combined
+        except Exception as e:
+            print(f"[GSheets] get_confirmed_bookings error: {e}")
             pass
     return list(_DEMO_CONFIRMED)
 

@@ -67,6 +67,10 @@ async function confirmBooking(bookingId) {
           row.innerHTML = `<td colspan="10" style="text-align:center;color:var(--success);padding:16px">✅ Confirmed & Notified</td>`;
         }, 600);
       }
+      // Reload view so Confirmed section displays the newly confirmed session
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } else {
       showAdminFlash(data.error || 'Failed to confirm booking.', 'error');
     }

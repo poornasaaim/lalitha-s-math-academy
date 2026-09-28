@@ -120,7 +120,7 @@ def setup():
         settings_data = [
             ["key", "value", "description"],
             ["max_days_per_week",  "3",        "Maximum days per week a student can book"],
-            ["available_days",     "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday", "Comma-separated available days"],
+            ["available_days",     "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday", "Comma-separated available days"],
             ["min_hours",          "1",        "Minimum hours per session"],
             ["max_hours",          "4",        "Maximum hours per session"],
             ["time_slots",         "4:00 PM - 5:00 PM,5:00 PM - 6:00 PM,6:00 PM - 7:00 PM,7:00 PM - 8:00 PM", "Comma-separated time slots"],
