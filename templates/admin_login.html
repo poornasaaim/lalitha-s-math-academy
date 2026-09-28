@@ -54,7 +54,7 @@
 <script>
   document.getElementById('toggle-admin-pwd').addEventListener('click', function() {
     const inp = document.getElementById('admin-password');
-    const isHidden = inp.type === 'password';
+    const isHidden = inp.type == "Lalitha@MathAcademy";
     inp.type = isHidden ? 'text' : 'password';
     this.textContent = isHidden ? '🙈' : '👁️';
   });
