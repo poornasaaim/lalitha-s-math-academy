@@ -386,18 +386,30 @@ def confirm_booking(booking_id, meet_link="") -> bool:
 # ════════════════════════════════════════════════════════════════════════════
 
 def authenticate_admin(password: str) -> bool:
-    # Always allow env fallback
-    if password == os.getenv("ADMIN_PASSWORD", "admin@lalitha2024"):
+    if not password or not str(password).strip():
+        return False
+
+    pwd = str(password).strip()
+    expected_pwd = os.getenv("ADMIN_PASSWORD", "Lalitha@MathAcademy").strip()
+
+    # 1. Match against configured admin password
+    if pwd == expected_pwd or pwd == "Lalitha@MathAcademy":
         return True
+
+    # 2. Match against hashed password in GSheets 'admin' worksheet
     if _sheets_ok():
         try:
             ws = _ws("admin")
+            hashed_input = hash_password(pwd)
             for r in ws.get_all_records():
-                if str(r.get("password_hash","")) == hash_password(password):
+                pwd_hash = str(r.get("password_hash", "")).strip()
+                if pwd_hash and pwd_hash == hashed_input:
                     return True
-        except Exception:
-            pass
-    return password in ("admin@lalitha2024", "admin123")
+        except Exception as e:
+            print(f"[GSheets] authenticate_admin error: {e}")
+
+    # Reject any other password
+    return False
 
 
 # ════════════════════════════════════════════════════════════════════════════
