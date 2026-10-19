@@ -157,7 +157,7 @@ _DEMO_CAROUSEL = [
     {"url":"https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1200&q=80",
      "caption":"Excellence in Mathematics Education","order":1},
     {"url":"https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&q=80",
-     "caption":"20 Years of Teaching Experience","order":2},
+     "caption":"23+ Years of Teaching Experience","order":2},
     {"url":"https://images.unsplash.com/photo-1596496050827-8299e0220de1?w=1200&q=80",
      "caption":"100% Board Exam Pass Record","order":3},
 ]
@@ -166,7 +166,7 @@ _DEMO_CONTACT = {
     "phone":        "+91 8122231658",
     "email":        "lalithamurali1996@gmail.com",
     "address":      "89B, 15th Cross Street, Sivanandha Nagar (Senthil Nagar), Kolathur, Chennai - 600099",
-    "whatsapp":     "918122231658",
+    "whatsapp":     "918610393920",
     "instagram":    "https://instagram.com/",
     "youtube":      "https://youtube.com/",
     "maps_embed":   "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3885.7234567890!2d80.2090123!3d13.1189456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5265ea0ed4a10b%3A0x5b3d6f17d9a9ef1f!2sKolathur%2C%20Chennai%2C%20Tamil%20Nadu%20600099!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin",
@@ -528,6 +528,10 @@ def get_contact_info() -> dict:
         try:
             ws = _ws("contact_info")
             result = {str(r.get("key","")): str(r.get("value","")) for r in ws.get_all_records() if r.get("key")}
+            # Normalize whatsapp: always ensure it starts with country code 91
+            wa = result.get("whatsapp", "").strip()
+            if wa and not wa.startswith("91"):
+                result["whatsapp"] = "91" + wa
             _cache_set("contact", result)
             return result
         except Exception:

@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "lalitha-math-academy-secret-2024")
 app.config["SESSION_PERMANENT"] = False
 
-ACADEMY_WA = os.getenv("ACADEMY_WHATSAPP", "919841260450")
+ACADEMY_WA = os.getenv("ACADEMY_WHATSAPP", "918610393920")
 CALLMEBOT_KEY = os.getenv("CALLMEBOT_API_KEY", "")
 
 
