@@ -24,6 +24,17 @@ ACADEMY_WA = os.getenv("ACADEMY_WHATSAPP", "919841260450")
 CALLMEBOT_KEY = os.getenv("CALLMEBOT_API_KEY", "")
 
 
+# ─── Template Context Processor ───────────────────────────────────────────────
+
+@app.context_processor
+def inject_contact():
+    """Inject contact info into every template automatically.
+    This ensures footer/nav contact details are always current from Google Sheets.
+    """
+    return dict(contact=sheets.get_contact_info())
+
+
+
 # ─── Decorators ──────────────────────────────────────────────────────────────
 
 def login_required(f):
@@ -101,6 +112,12 @@ def index():
                            pricing=pricing,
                            contact=contact,
                            is_logged_in=is_logged)
+
+
+@app.route("/ping")
+def ping():
+    """Keep-alive endpoint for Render.com free tier — prevents cold start sleeps."""
+    return "pong", 200
 
 
 @app.route("/login", methods=["GET", "POST"])

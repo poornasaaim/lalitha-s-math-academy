@@ -12,7 +12,7 @@
       <img src="{{ img.url }}" alt="{{ img.caption }}" loading="{% if loop.first %}eager{% else %}lazy{% endif %}">
       <div class="carousel-overlay">
         <div class="carousel-content">
-          <div class="carousel-badge">⭐ 20 Years of Excellence</div>
+          <div class="carousel-badge">⭐ {{ contact.get('experience', '23+ Years') }} of Excellence</div>
           <h1 class="carousel-title">{{ img.caption }}</h1>
           <p class="carousel-subtitle">
             Expert Mathematics coaching for Class 9, 10 &amp; 12 students.<br>
@@ -51,7 +51,7 @@
   <div class="container">
     <div class="stats-grid">
       <div class="stat-item">
-        <div class="stat-num" data-counter="20" data-suffix="+">0+</div>
+        <div class="stat-num" data-counter="23" data-suffix="+">0+</div>
         <div class="stat-label">Years Experience</div>
       </div>
       <div class="stat-item">
@@ -59,11 +59,11 @@
         <div class="stat-label">Board Exam Pass Rate</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num" data-counter="500" data-suffix="+">0+</div>
-        <div class="stat-label">Students Taught</div>
+        <div class="stat-num" data-counter="200" data-suffix="+">0+</div>
+        <div class="stat-label">Students Taught Per Year</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num" data-counter="7" data-suffix=" yrs">0 yrs</div>
+        <div class="stat-num" data-counter="10" data-suffix=" yrs">0 yrs</div>
         <div class="stat-label">Consecutive 100% Result</div>
       </div>
     </div>
@@ -80,7 +80,7 @@
           <div class="about-avatar">👩‍🏫</div>
           <div class="about-name">V. Lalitha</div>
           <div class="about-title">M.Sc. (Mathematics) · B.Ed.</div>
-          <div class="about-exp-badge">🏆 20 Years of Teaching Excellence</div>
+          <div class="about-exp-badge">🏆 {{ contact.get('experience', '23+ Years') }} of Teaching Excellence</div>
           <div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center">
             <span class="about-tag"
               style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff">📐 CBSE
@@ -113,20 +113,21 @@
         </h2>
         <p style="color:var(--text-muted);margin-bottom:16px;line-height:1.8">
           With a <strong>Master's degree in Mathematics</strong> from Madurai Kamaraj University and a B.Ed. from IGNOU,
-          V. Lalitha brings 20 years of dedicated teaching experience. Currently serving at
+          {{ contact.get('teacher_name', 'V. Lalitha') }} brings {{ contact.get('experience', '23+ years') }} of dedicated teaching experience. Currently serving at
           <strong>SKNS PMC Vivekananda Vidyalaya, Perambur</strong>, she has a proven track record of
-          inspiring students and delivering <strong>100% board exam results for 7 consecutive years</strong>.
+          inspiring students and delivering <strong>100% board exam results for 10 consecutive years</strong>.
         </p>
         <p style="color:var(--text-muted);margin-bottom:24px;line-height:1.8">
           Her teaching philosophy focuses on <em>kindling analytical and logical interest</em> —
           making complex concepts easy through innovative, student-centric methods.
         </p>
         <ul class="achievements-list">
-          <li>100% pass result in AISSE for 7 consecutive years</li>
+          <li>100% pass result in AISSE for 10 consecutive years</li>
           <li>Produced 2 centum scores in AISSE (2019–2020)</li>
           <li>Resource Person & AISSE Coordinator since 2010</li>
           <li>AISSCE Board Evaluator and Observer</li>
           <li>Conducts VISHESHA PRADEEPANA enrichment classes</li>
+          <li>Produced 1 centum score in AISSE (2022–2023)</li>
         </ul>
         <div style="margin-top:28px;display:flex;flex-wrap:wrap;gap:8px">
           <span class="about-tag">Tamil · English · Telugu</span>
@@ -259,7 +260,7 @@
     <div class="text-center" style="margin-top:40px">
       <p style="color:var(--text-muted);font-size:0.9rem">
         💬 Not sure which plan is right for you?
-        <a href="https://wa.me/919841260450?text=Hi%20Lalitha%20Ma'am!%20I'd%20like%20to%20know%20more%20about%20your%20Math%20coaching%20plans."
+        <a href="https://wa.me/{{ contact.get('whatsapp', '919841260450') }}?text=Hi%20Lalitha%20Ma'am!%20I'd%20like%20to%20know%20more%20about%20your%20Math%20coaching%20plans."
           target="_blank" style="color:var(--primary-light);font-weight:600">Chat with us on WhatsApp →</a>
       </p>
     </div>
@@ -312,7 +313,7 @@
     </p>
     <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
       <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg" id="cta-register-btn">📝 Register Free Now</a>
-      <a href="https://wa.me/919841260450?text=Hi%20Lalitha%20Ma'am!%20I'm%20interested%20in%20joining%20your%20Math%20Academy."
+      <a href="https://wa.me/{{ contact.get('whatsapp', '919841260450') }}?text=Hi%20Lalitha%20Ma'am!%20I'm%20interested%20in%20joining%20your%20Math%20Academy."
         class="btn btn-wa btn-lg" id="cta-whatsapp-btn" target="_blank" rel="noopener">💬 WhatsApp Us</a>
     </div>
   </div>

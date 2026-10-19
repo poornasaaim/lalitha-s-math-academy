@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Lalitha's Math Academy — Expert Mathematics Tuition, Chennai{% endblock %}</title>
-  <meta name="description" content="{% block meta_desc %}Lalitha's Math Academy — Expert Mathematics tuition for Class 9, 10 & 12 students in Kolathur, Chennai. 20 years of experience, 100% board exam pass record. Book your session today!{% endblock %}">
+  <meta name="description" content="{% block meta_desc %}Lalitha's Math Academy — Expert Mathematics tuition for Class 9, 10 & 12 students in Kolathur, Chennai. 23+ years of experience, 100% board exam pass record. Book your session today!{% endblock %}">
   <meta name="keywords" content="Mathematics tuition Chennai, Maths coaching Kolathur, Class 10 Maths tutor, Class 12 Maths coaching, CBSE Maths teacher Chennai, Lalitha Math Academy">
   <meta name="author" content="V. Lalitha">
   <meta property="og:title" content="Lalitha's Math Academy">
-  <meta property="og:description" content="Expert Mathematics Tuition in Chennai — 20 Years Experience">
+  <meta property="og:description" content="Expert Mathematics Tuition in Chennai — 23+ Years Experience">
   <meta property="og:type" content="website">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,7 +81,7 @@
             </div>
           </div>
           <p class="footer-brand-desc">
-            Expert Mathematics tuition by <strong>V. Lalitha M.Sc., B.Ed.</strong> — 20 years of dedicated teaching. Transforming students' understanding of Mathematics through innovative and inspiring methods.
+            Expert Mathematics tuition by <strong>{{ contact.get('teacher_name', 'V. Lalitha M.Sc., B.Ed.') }}</strong> — {{ contact.get('experience', '23+ Years') }} of dedicated teaching. Transforming students' understanding of Mathematics through innovative and inspiring methods.
           </p>
           <div class="social-links">
             <a href="{{ contact.get('whatsapp', '#') and 'https://wa.me/' + contact.get('whatsapp', '919841260450') }}" class="social-link" title="WhatsApp" target="_blank" rel="noopener">💬</a>

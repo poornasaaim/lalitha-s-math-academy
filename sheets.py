@@ -10,7 +10,7 @@ After saving credentials via the admin panel, the next API call automatically
 switches to live mode (no restart required).
 """
 
-import os, json, hashlib, datetime
+import os, json, hashlib, datetime, time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,6 +19,23 @@ SCOPES     = ["https://www.googleapis.com/auth/spreadsheets",
                "https://www.googleapis.com/auth/drive"]
 SHEET_ID   = os.getenv("GOOGLE_SHEET_ID", "").strip()
 CREDS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
+
+# ── Simple TTL cache (avoids a Sheets API call on every page load) ────────────
+_CACHE: dict = {}
+_CACHE_TTL  = 300  # seconds (5 minutes)
+
+def _cache_get(key):
+    entry = _CACHE.get(key)
+    if entry and (time.time() - entry["ts"]) < _CACHE_TTL:
+        return entry["val"]
+    return None
+
+def _cache_set(key, val):
+    _CACHE[key] = {"val": val, "ts": time.time()}
+
+def _cache_clear(*keys):
+    for k in keys:
+        _CACHE.pop(k, None)
 
 # ── Lazy GSheets client (recreated after credentials change) ──────────────────
 _gc   = None
@@ -154,7 +171,7 @@ _DEMO_CONTACT = {
     "youtube":      "https://youtube.com/",
     "maps_embed":   "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3885.7234567890!2d80.2090123!3d13.1189456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5265ea0ed4a10b%3A0x5b3d6f17d9a9ef1f!2sKolathur%2C%20Chennai%2C%20Tamil%20Nadu%20600099!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin",
     "teacher_name": "V. Lalitha M.Sc., B.Ed.",
-    "experience":   "20 Years",
+    "experience":   "23+ Years",
     "subject":      "Mathematics",
     "school_name":  "Lalitha's Math Academy",
 }
@@ -165,11 +182,16 @@ _DEMO_CONTACT = {
 # ════════════════════════════════════════════════════════════════════════════
 
 def get_settings() -> dict:
+    cached = _cache_get("settings")
+    if cached is not None:
+        return cached
     if _sheets_ok():
         try:
             ws = _ws("settings")
             records = ws.get_all_records()
-            return {str(r.get("key","")): str(r.get("value","")) for r in records if r.get("key")}
+            result = {str(r.get("key","")): str(r.get("value","")) for r in records if r.get("key")}
+            _cache_set("settings", result)
+            return result
         except Exception as e:
             print(f"[GSheets] get_settings fallback: {e}")
     return dict(_DEMO_SETTINGS)
@@ -177,6 +199,7 @@ def get_settings() -> dict:
 
 def save_settings(settings: dict) -> bool:
     """Save/update admin settings. Merges with existing."""
+    _cache_clear("settings", "pricing")
     if _sheets_ok():
         try:
             ws      = _ws("settings")
@@ -417,16 +440,22 @@ def authenticate_admin(password: str) -> bool:
 # ════════════════════════════════════════════════════════════════════════════
 
 def get_carousel_images() -> list:
+    cached = _cache_get("carousel")
+    if cached is not None:
+        return cached
     if _sheets_ok():
         try:
             ws = _ws("carousel_images")
-            return sorted(ws.get_all_records(), key=lambda x: int(x.get("order",99)))
+            result = sorted(ws.get_all_records(), key=lambda x: int(x.get("order",99)))
+            _cache_set("carousel", result)
+            return result
         except Exception:
             pass
     return list(_DEMO_CAROUSEL)
 
 
 def update_carousel_images(images: list) -> bool:
+    _cache_clear("carousel")
     if _sheets_ok():
         try:
             ws = _ws("carousel_images")
@@ -448,10 +477,15 @@ def update_carousel_images(images: list) -> bool:
 
 def get_available_slots() -> list:
     """Returns flat list of {day, time_slot, is_available} dicts."""
+    cached = _cache_get("slots")
+    if cached is not None:
+        return cached
     if _sheets_ok():
         try:
             ws = _ws("available_slots")
-            return ws.get_all_records()
+            result = ws.get_all_records()
+            _cache_set("slots", result)
+            return result
         except Exception:
             pass
     # Fallback: generate from settings
@@ -467,6 +501,7 @@ def get_available_slots() -> list:
 
 def set_all_slots(slots: list) -> bool:
     """Update slot availability from admin panel."""
+    _cache_clear("slots")
     if _sheets_ok():
         try:
             ws = _ws("available_slots")
@@ -486,10 +521,15 @@ def set_all_slots(slots: list) -> bool:
 # ════════════════════════════════════════════════════════════════════════════
 
 def get_contact_info() -> dict:
+    cached = _cache_get("contact")
+    if cached is not None:
+        return cached
     if _sheets_ok():
         try:
             ws = _ws("contact_info")
-            return {str(r.get("key","")): str(r.get("value","")) for r in ws.get_all_records() if r.get("key")}
+            result = {str(r.get("key","")): str(r.get("value","")) for r in ws.get_all_records() if r.get("key")}
+            _cache_set("contact", result)
+            return result
         except Exception:
             pass
     return dict(_DEMO_CONTACT)
