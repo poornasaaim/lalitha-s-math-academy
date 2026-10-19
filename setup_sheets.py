@@ -206,10 +206,10 @@ def setup():
         ws.clear()
         contact_data = [
             ["key", "value"],
-            ["phone",        "+91 8122231658"],
-            ["email",        "lalithamurali1996@gmail.com"],
+            ["phone",        "+91 8610393920"],
+            ["email",        "lalithasmathacademy@gmail.com"],
             ["address",      "89B, 15th Cross Street, Sivanandha Nagar (Senthil Nagar), Kolathur, Chennai - 600099"],
-            ["whatsapp",     "918122231658"],
+            ["whatsapp",     "918610393920"],
             ["instagram",    "https://instagram.com/"],
             ["youtube",      "https://youtube.com/"],
             ["maps_embed",   "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3885.7234567890!2d80.2090123!3d13.1189456!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5265ea0ed4a10b%3A0x5b3d6f17d9a9ef1f!2sKolathur%2C%20Chennai%2C%20Tamil%20Nadu%20600099!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"],
