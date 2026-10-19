@@ -164,7 +164,7 @@ _DEMO_CAROUSEL = [
 
 _DEMO_CONTACT = {
     "phone":        "+91 8610393920",
-    "email":        "lithasmathacademy@gmail.com",
+    "email":        "lalithasmathacademy@gmail.com",
     "address":      "89B, 15th Cross Street, Sivanandha Nagar (Senthil Nagar), Kolathur, Chennai - 600099",
     "whatsapp":     "918610393920",
     "instagram":    "https://www.instagram.com/lalithasmathacademy?srtk=MXIxNGJzcGdnbGxjNg%3D%3D",
