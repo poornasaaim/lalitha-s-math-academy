@@ -124,7 +124,8 @@
           <button class="btn btn-ghost btn-sm" onclick="document.querySelector('[data-section=confirmed]').click()" id="admin-view-confirmed">✅ View Confirmed ({{ confirmed|length }})</button>
           <button class="btn btn-outline btn-sm" onclick="document.querySelector('[data-section=slots]').click()" id="admin-manage-slots">🕐 Manage Slots</button>
           <a href="{{ url_for('index') }}" target="_blank" class="btn btn-ghost btn-sm">🌐 View Website</a>
-          <a href="https://wa.me/919841260450" target="_blank" class="btn btn-wa btn-sm">💬 Open WhatsApp</a>
+          <a href="https://wa.me/{{ contact.get('whatsapp', '919841260450') }}" target="_blank" class="btn btn-wa btn-sm">💬 Open WhatsApp</a>
+          <button class="btn btn-ghost btn-sm" id="admin-refresh-cache" onclick="refreshCache()" title="Pull latest data from Google Sheets immediately">🔄 Refresh from Sheets</button>
         </div>
       </div>
 
@@ -577,4 +578,27 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script>
+function refreshCache() {
+  const btn = document.getElementById('admin-refresh-cache');
+  btn.disabled = true;
+  btn.textContent = '⏳ Refreshing...';
+  fetch('/api/refresh-cache')
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        btn.textContent = '✅ Done! Reloading...';
+        setTimeout(() => location.reload(), 800);
+      } else {
+        btn.textContent = '❌ Failed';
+        btn.disabled = false;
+      }
+    })
+    .catch(() => {
+      btn.textContent = '❌ Error';
+      btn.disabled = false;
+    });
+}
+</script>
 {% endblock %}
+

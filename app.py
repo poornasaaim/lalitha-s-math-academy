@@ -120,6 +120,17 @@ def ping():
     return "pong", 200
 
 
+@app.route("/api/refresh-cache")
+@admin_required
+def refresh_cache():
+    """Force-clear the Sheets data cache instantly (admin only).
+    Use this right after updating data in Google Sheets to see changes immediately.
+    """
+    sheets._cache_clear("contact", "settings", "carousel", "slots", "pricing")
+    return jsonify({"success": True, "message": "Cache cleared. Fresh data will load on next page visit."})
+
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if "user" in session:

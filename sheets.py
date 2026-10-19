@@ -22,7 +22,7 @@ CREDS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
 
 # ── Simple TTL cache (avoids a Sheets API call on every page load) ────────────
 _CACHE: dict = {}
-_CACHE_TTL  = 300  # seconds (5 minutes)
+_CACHE_TTL  = 60   # seconds (1 minute — changes in Google Sheet appear within 1 min)
 
 def _cache_get(key):
     entry = _CACHE.get(key)
